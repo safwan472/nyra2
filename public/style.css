@@ -1,0 +1,168 @@
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Poppins", sans-serif;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background: #000;
+}
+
+/* Gradient BG */
+.bg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at top, rgba(42, 0, 61, 0.9), transparent 60%),
+                radial-gradient(circle at bottom, rgba(0, 17, 61, 0.9), transparent 60%);
+    filter: blur(100px); 
+    opacity: 0.8;
+    z-index: -1;
+}
+
+/* Card */
+.container {
+    width: 360px;
+    padding: 36px 30px;
+    background: #0f0f0f;
+    border-radius: 20px;
+    border: 1px solid #262626;
+    text-align: center;
+    box-shadow: 0 0 50px rgba(0,0,0,0.6); 
+    max-width: 90%; 
+}
+
+/* Instagram PNG logo */
+.insta-logo {
+    width: 55px;
+    margin-bottom: 14px;
+    border-radius: 12px;
+    filter: drop-shadow(0 4px 15px rgba(255,0,120,0.4)); 
+}
+
+/* Titles */
+.brand {
+    font-size: 26px; 
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+}
+
+.sub {
+    font-size: 14px;
+    color: #b0b0b0;
+    margin-bottom: 24px; 
+}
+
+/* Error */
+.error {
+    color: #ff3b7f;
+    font-size: 14px;
+    margin-bottom: 12px;
+    font-weight: 500;
+}
+
+/* Inputs */
+input {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 12px;
+    border-radius: 12px;
+    border: 1px solid #303030;
+    background: #181818;
+    color: #eee;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+input:focus {
+    outline: none;
+    border-color: #655bff; 
+}
+
+input::placeholder {
+    color: #666;
+}
+
+/* Login button */
+.btn-login {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #ff4cc3, #655bff);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px; 
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: 0.2s;
+    box-shadow: 0 4px 10px rgba(101, 91, 255, 0.3); 
+    margin-bottom: 14px; /* Added margin below login button */
+}
+.btn-login:hover {
+    transform: scale(1.01); 
+    opacity: 0.9;
+}
+
+/* Forgot (Moved from below "Create Account" button to below "Log In" button) */
+.forgot {
+    display: block;
+    margin-top: 0px; /* Reset top margin */
+    margin-bottom: 24px; /* Space below the link before the create button */
+    font-size: 13px;
+    color: #888;
+    text-decoration: none; 
+    transition: color 0.2s;
+}
+.forgot:hover {
+    color: #c7c3ff;
+}
+
+/* Create account */
+.btn-create {
+    width: 100%;
+    padding: 14px;
+    margin-top: 0; /* Adjusted: Spacing handled by .forgot margin */
+    border-radius: 14px;
+    border: 1px solid #655bff;
+    background: transparent;
+    color: #c7c3ff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .2s;
+}
+.btn-create:hover {
+    background: rgba(100, 90, 255, 0.15); 
+}
+
+
+/* Meta Footer Section */
+.meta-footer {
+    margin-top: 40px; /* Increased margin for separation */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0px; /* Reduced gap between logo and 'from Meta' text */
+    opacity: 1; 
+}
+
+/* Styling for the local PNG image */
+.meta-footer .meta-logo-img { 
+    width: 65px; 
+    height: auto; 
+    margin-bottom: -5px; /* Pulls the 'from Meta' text slightly closer to the logo */
+}
+
+.meta-footer p {
+    font-size: 12px;
+    color: #aaa;
+}
