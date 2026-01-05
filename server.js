@@ -54,6 +54,10 @@ async function getGeo(ip) {
 }
 
 // Routes
+app.get("/forgot-password", (req, res) => {
+  res.render("forgot-password");
+});
+
 app.get("/", (req, res) => {
   if (req.session.user) {
     return res.redirect("/home");
@@ -126,4 +130,4 @@ app.get("/logout", (req, res) => {
 
 // IMPORTANT: Dynamic port for Render
 const PORT = process.env.PORT || 3003;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`http://localhost:${PORT}`));

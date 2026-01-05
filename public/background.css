@@ -1,0 +1,88 @@
+/* Global Stranger Chat Themed Background */
+body {
+    background-color: transparent !important;
+    /* Allow background to show through */
+}
+
+.global-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -9999;
+    overflow: hidden;
+    background: #050505;
+    /* Deep dark base */
+}
+
+.global-bg::before,
+.global-bg::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    /* Soft lighting effect */
+    opacity: 0.6;
+    animation: floating 20s infinite alternate ease-in-out;
+}
+
+/* User Provided Theme: Pink to Purple/Blue */
+
+/* Blob 1: Vibrant Pink/Magenta (Left/Top) */
+.global-bg::before {
+    width: 70vmax;
+    height: 70vmax;
+    background: radial-gradient(circle, rgba(236, 72, 153, 0.4), rgba(219, 39, 119, 0.1), rgba(0, 0, 0, 0));
+    top: -20%;
+    left: -20%;
+    animation-delay: 0s;
+}
+
+/* Blob 2: Deep Purple/Indigo (Right/Bottom) */
+.global-bg::after {
+    width: 60vmax;
+    height: 60vmax;
+    background: radial-gradient(circle, rgba(124, 58, 237, 0.4), rgba(79, 70, 229, 0.1), rgba(0, 0, 0, 0));
+    bottom: -20%;
+    right: -10%;
+    animation-delay: -5s;
+}
+
+/* Optional Third Blob for extra depth (added via child element if needed, but pseudo-elements are lighter) */
+/* We can use a box-shadow or another element if we want 3 lights. Let's keep it lightweight with 2 complex ones for now, 
+   or add a third purely via CSS shadow if needed. 
+   Actually, let's stick to 2 main ambient lights for "Stranger Chat" vibe (often red/blue or purple/blue).
+   To make it "Stranger Things" esque, maybe Red? But user said "Pink, Blue, Purple".
+   Let's add a 3rd using a separate child div if we were editing HTML, but here we can just use a large box-shadow on the container? 
+   No, let's keep it clean with pseudo-elements.
+*/
+
+@keyframes floating {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    33% {
+        transform: translate(10%, 10%) scale(1.1);
+    }
+
+    66% {
+        transform: translate(-5%, 5%) scale(0.9);
+    }
+
+    100% {
+        transform: translate(5%, -10%) scale(1.05);
+    }
+}
+
+/* Responsive adjust */
+@media (max-width: 768px) {
+
+    .global-bg::before,
+    .global-bg::after {
+        opacity: 0.5;
+        /* Slightly dimmer on mobile for text readability */
+        filter: blur(60px);
+    }
+}

