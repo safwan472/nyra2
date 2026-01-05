@@ -71,12 +71,7 @@ app.get("/", (req, res) => {
     return res.redirect("/home");
   }
 
-  // Pass skipSplash flag if set, then clear it (unless persistent logic desired)
-  const skipSplash = req.session.skipSplash || false;
-  // req.session.skipSplash = false; // Optional: Reset if you want splash on refresh. 
-  // User asked to "keep that login page", implying skip splash on retry.
-
-  res.render("login", { msg: req.session.msg, skipSplash: skipSplash });
+  res.render("login", { msg: req.session.msg });
   req.session.msg = null;
 });
 
@@ -128,7 +123,6 @@ app.post("/verify", async (req, res) => {
   } else {
     console.log(`❌ Login failed`);
     req.session.msg = "Invalid username or password";
-    req.session.skipSplash = true; // Skip splash screen on next render
     return res.redirect("/");
   }
 });
