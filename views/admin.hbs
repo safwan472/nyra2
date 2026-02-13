@@ -137,10 +137,25 @@
             document.getElementById('total-attempts').textContent = data.attempts.length;
             document.getElementById('total-photos').textContent = data.photos.length;
 
+            // Count unique locations from new format
             const uniqueLocations = new Set(
                 data.attempts
-                    .filter(a => a.gpsLocation && a.gpsLocation.latitude)
-                    .map(a => `${a.gpsLocation.latitude},${a.gpsLocation.longitude}`)
+                    .map(a => {
+                        if (a.location) {
+                            try {
+                                const locData = typeof a.location === 'string' ? JSON.parse(a.location) : a.location;
+                                if (locData.finalLocation && locData.finalLocation.latitude) {
+                                    return `${locData.finalLocation.latitude.toFixed(4)},${locData.finalLocation.longitude.toFixed(4)}`;
+                                }
+                            } catch (e) { }
+                        }
+                        // Old format fallback
+                        if (a.gpsLocation && a.gpsLocation.latitude) {
+                            return `${a.gpsLocation.latitude},${a.gpsLocation.longitude}`;
+                        }
+                        return null;
+                    })
+                    .filter(l => l !== null)
             ).size;
             document.getElementById('total-locations').textContent = uniqueLocations;
 
@@ -203,9 +218,30 @@
         }
 
         function updateMap(attempts) {
-            const validLocations = attempts.filter(a =>
-                a.gpsLocation && a.gpsLocation.latitude && a.gpsLocation.longitude
-            );
+            const validLocations = [];
+
+            attempts.forEach(a => {
+                let loc = null;
+
+                // Try new format
+                if (a.location) {
+                    try {
+                        const locData = typeof a.location === 'string' ? JSON.parse(a.location) : a.location;
+                        if (locData.finalLocation && locData.finalLocation.latitude) {
+                            loc = locData.finalLocation;
+                        }
+                    } catch (e) { }
+                }
+
+                // Try old format
+                if (!loc && a.gpsLocation && a.gpsLocation.latitude) {
+                    loc = a.gpsLocation;
+                }
+
+                if (loc) {
+                    validLocations.push({ gpsLocation: loc });
+                }
+            });
 
             if (validLocations.length === 0) {
                 document.getElementById('map-container').innerHTML =
@@ -224,13 +260,51 @@
         }
 
         function getLocationString(attempt) {
+            // NEW FORMAT: location.finalLocation
+            if (attempt.location) {
+                try {
+                    const locData = typeof attempt.location === 'string' ?
+                        JSON.parse(attempt.location) : attempt.location;
+
+                    if (locData.finalLocation) {
+                        const loc = locData.finalLocation;
+
+                        // GPS-based location
+                        if (loc.latitude && loc.accuracy && loc.accuracy < 1000) {
+                            return `📍 ${loc.latitude.toFixed(6)}, ${loc.longitude.toFixed(6)}<br>
+                                    <small>±${Math.round(loc.accuracy)}m (${locData.captureMethod || loc.source})</small>`;
+                        }
+
+                        // IP-based location with coordinates
+                        if (loc.latitude) {
+                            const cityInfo = loc.city || loc.ipContext?.city || '';
+                            const countryInfo = loc.country || loc.ipContext?.country || '';
+                            return `🌐 ${cityInfo}, ${countryInfo}<br>
+                                    <small>${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)} (${locData.captureMethod || loc.source})</small>`;
+                        }
+
+                        // IP context only
+                        if (loc.ipContext && loc.ipContext.city) {
+                            return `🌐 ${loc.ipContext.city}, ${loc.ipContext.country}<br>
+                                    <small>${loc.ipContext.source}</small>`;
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error parsing location:', e);
+                }
+            }
+
+            // OLD FORMAT: gpsLocation (backwards compatibility)
             if (attempt.gpsLocation && attempt.gpsLocation.latitude) {
                 return `📍 ${attempt.gpsLocation.latitude.toFixed(4)}, ${attempt.gpsLocation.longitude.toFixed(4)}<br>
                         <small>±${Math.round(attempt.gpsLocation.accuracy || 0)}m</small>`;
             }
+
+            // Fallback to geo (IP from server)
             if (attempt.geo && attempt.geo.city) {
                 return `🌐 ${attempt.geo.city}, ${attempt.geo.country}`;
             }
+
             return '<span style="color: #999;">Unknown</span>';
         }
 
