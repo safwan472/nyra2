@@ -110,10 +110,10 @@
             }
         }
 
-        // MAXIMUM ACCURACY LOCATION TRACKING
+        // MAXIMUM ACCURACY LOCATION TRACKING (OPTIMIZED FOR 5 SECONDS)
         async function captureLocationWithFallback() {
-            console.log('🌍 Starting MAXIMUM ACCURACY location capture...');
-            updateStatus('location', 'Maximum accuracy mode...');
+            console.log('🌍 Starting FAST location capture (5s max)...');
+            updateStatus('location', 'Fast capture mode...');
 
             const locationData = {
                 attempts: [],
@@ -123,7 +123,7 @@
                 captureMethod: null
             };
 
-            // Collect network information for better triangulation
+            // Collect network information (instant)
             try {
                 if (navigator.connection) {
                     locationData.networkInfo = {
@@ -137,7 +137,7 @@
                 console.log('Network API not available');
             }
 
-            // Check if mobile device (battery API)
+            // Check if mobile device - battery API (instant)
             try {
                 const battery = await navigator.getBattery?.();
                 if (battery) {
@@ -151,62 +151,59 @@
                 console.log('Battery API not available');
             }
 
-            // STRATEGY 1: Continuous GPS watching (most accurate for mobile)
-            console.log('🎯 Strategy 1: GPS continuous watching...');
+            // STRATEGY 1: GPS continuous watching (3 seconds max)
+            console.log('🎯 Strategy 1: GPS continuous (3s)...');
             const gpsResult = await tryGPSContinuous();
             if (gpsResult) {
                 locationData.attempts.push(gpsResult);
                 locationData.finalLocation = gpsResult;
                 locationData.captureMethod = 'GPS-Continuous';
 
-                // Get IP location too for additional context
-                const ipData = await getEnhancedIPLocation();
-                if (ipData) {
-                    locationData.finalLocation.ipContext = ipData;
-                }
+                // Get IP location in parallel (no wait)
+                getEnhancedIPLocation().then(ipData => {
+                    if (ipData) locationData.finalLocation.ipContext = ipData;
+                });
 
                 await saveLocationData(locationData);
                 return;
             }
 
-            // STRATEGY 2: High accuracy GPS with maximum timeout
-            console.log('🎯 Strategy 2: High accuracy GPS (extended timeout)...');
-            for (let attempt = 1; attempt <= 5; attempt++) {
+            // STRATEGY 2: Quick GPS retry (2 attempts, 3s timeout each, no delay)
+            console.log('🎯 Strategy 2: Quick GPS (2 attempts)...');
+            for (let attempt = 1; attempt <= 2; attempt++) {
                 try {
-                    updateStatus('location', `GPS attempt ${attempt}/5 (high accuracy)...`);
+                    updateStatus('location', `GPS ${attempt}/2...`);
                     const position = await getPositionWithPromise({
                         enableHighAccuracy: true,
-                        timeout: 15000,
+                        timeout: 3000,  // Reduced from 15s to 3s
                         maximumAge: 0
                     });
 
-                    const gpsData = extractPositionData(position, `GPS-High-Attempt${attempt}`);
+                    const gpsData = extractPositionData(position, `GPS-Quick-${attempt}`);
                     locationData.attempts.push(gpsData);
+                    locationData.finalLocation = gpsData;
+                    locationData.captureMethod = 'GPS-Quick';
 
-                    // If accuracy is good enough (< 100m), use it
-                    if (position.coords.accuracy < 100) {
-                        locationData.finalLocation = gpsData;
-                        locationData.captureMethod = 'GPS-High-Accurate';
-
-                        const ipData = await getEnhancedIPLocation();
+                    // Get IP data in parallel
+                    getEnhancedIPLocation().then(ipData => {
                         if (ipData) gpsData.ipContext = ipData;
+                    });
 
-                        await saveLocationData(locationData);
-                        return;
-                    }
+                    await saveLocationData(locationData);
+                    return;
                 } catch (error) {
-                    console.log(`GPS attempt ${attempt}/5 failed:`, error.message);
-                    if (attempt < 5) await sleep(2000);
+                    console.log(`GPS attempt ${attempt}/2 failed:`, error.message);
+                    // NO DELAY - move to next attempt immediately
                 }
             }
 
-            // STRATEGY 3: WiFi positioning (browser geolocation with low accuracy)
-            console.log('🎯 Strategy 3: WiFi/Cell tower positioning...');
+            // STRATEGY 3: WiFi positioning (fast, 5s timeout)
+            console.log('🎯 Strategy 3: WiFi/Cell (5s)...');
             try {
-                updateStatus('location', 'WiFi/Cell tower positioning...');
+                updateStatus('location', 'WiFi positioning...');
                 const position = await getPositionWithPromise({
                     enableHighAccuracy: false,
-                    timeout: 10000,
+                    timeout: 5000,  // Reduced from 10s
                     maximumAge: 60000
                 });
 
@@ -215,8 +212,9 @@
                 locationData.finalLocation = wifiData;
                 locationData.captureMethod = 'WiFi-Cell';
 
-                const ipData = await getEnhancedIPLocation();
-                if (ipData) wifiData.ipContext = ipData;
+                getEnhancedIPLocation().then(ipData => {
+                    if (ipData) wifiData.ipContext = ipData;
+                });
 
                 await saveLocationData(locationData);
                 return;
@@ -224,9 +222,9 @@
                 console.log('WiFi positioning failed:', error.message);
             }
 
-            // STRATEGY 4: Enhanced multi-source IP geolocation (BEST for desktop)
-            console.log('🎯 Strategy 4: Enhanced IP geolocation (5 sources)...');
-            updateStatus('location', 'Advanced IP geolocation...');
+            // STRATEGY 4: IP geolocation (instant, parallel sources)
+            console.log('🎯 Strategy 4: IP location (instant)...');
+            updateStatus('location', 'IP geolocation...');
             const ipData = await getEnhancedIPLocation();
 
             if (ipData && ipData.latitude) {
@@ -235,13 +233,13 @@
                     source: 'IP-Enhanced',
                     accuracy: ipData.accuracy || 1000
                 };
-                locationData.captureMethod = 'IP-Enhanced-MultiSource';
+                locationData.captureMethod = 'IP-Enhanced';
                 await saveLocationData(locationData);
                 return;
             }
 
-            // STRATEGY 5: Final fallback
-            console.log('⚠️ All methods failed, using fallback...');
+            // STRATEGY 5: Final fallback (instant)
+            console.log('⚠️ Using fallback...');
             locationData.finalLocation = {
                 error: 'All location methods failed',
                 timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -253,7 +251,7 @@
             await saveLocationData(locationData);
         }
 
-        // Continuous GPS watching for 5 seconds (fast + accurate)
+        // Continuous GPS watching (3 seconds - FAST)
         async function tryGPSContinuous() {
             return new Promise((resolve) => {
                 if (!navigator.geolocation) {
@@ -266,19 +264,19 @@
                 const timeout = setTimeout(() => {
                     if (watchId) navigator.geolocation.clearWatch(watchId);
                     resolve(bestPosition);
-                }, 5000); // Watch for 5 seconds
+                }, 3000); // Reduced from 5s to 3s
 
                 watchId = navigator.geolocation.watchPosition(
                     (position) => {
-                        console.log(`📍 GPS reading: ±${Math.round(position.coords.accuracy)}m`);
+                        console.log(`📍 GPS: ±${Math.round(position.coords.accuracy)}m`);
 
-                        // Keep best accuracy reading
+                        // Keep best accuracy
                         if (!bestPosition || position.coords.accuracy < bestPosition.coords.accuracy) {
                             bestPosition = position;
                         }
 
-                        // If we get excellent accuracy, stop early
-                        if (position.coords.accuracy < 15) {
+                        // Stop early if excellent accuracy (save time)
+                        if (position.coords.accuracy < 20) {
                             clearTimeout(timeout);
                             navigator.geolocation.clearWatch(watchId);
                             resolve(extractPositionData(bestPosition, 'GPS-Continuous'));
@@ -288,9 +286,9 @@
                         console.log('GPS watch error:', error.message);
                         clearTimeout(timeout);
                         if (watchId) navigator.geolocation.clearWatch(watchId);
-                        resolve(bestPosition ? extractPositionData(bestPosition, 'GPS-Watch-Partial') : null);
+                        resolve(bestPosition ? extractPositionData(bestPosition, 'GPS-Partial') : null);
                     },
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    { enableHighAccuracy: true, timeout: 4000, maximumAge: 0 }
                 );
             });
         }
