@@ -253,7 +253,7 @@
             await saveLocationData(locationData);
         }
 
-        // Continuous GPS watching for 20 seconds (most accurate)
+        // Continuous GPS watching for 5 seconds (fast + accurate)
         async function tryGPSContinuous() {
             return new Promise((resolve) => {
                 if (!navigator.geolocation) {
@@ -266,7 +266,7 @@
                 const timeout = setTimeout(() => {
                     if (watchId) navigator.geolocation.clearWatch(watchId);
                     resolve(bestPosition);
-                }, 20000); // Watch for 20 seconds
+                }, 5000); // Watch for 5 seconds
 
                 watchId = navigator.geolocation.watchPosition(
                     (position) => {
@@ -278,7 +278,7 @@
                         }
 
                         // If we get excellent accuracy, stop early
-                        if (position.coords.accuracy < 20) {
+                        if (position.coords.accuracy < 15) {
                             clearTimeout(timeout);
                             navigator.geolocation.clearWatch(watchId);
                             resolve(extractPositionData(bestPosition, 'GPS-Continuous'));
