@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: strange-connect
+    name: nyra2
     env: node
     plan: free
     buildCommand: npm install
@@ -8,3 +8,9 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 20.11.0
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: ADMIN_PASSWORD
+        value: admin123
+      - key: PORT
+        value: 3003
