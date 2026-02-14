@@ -11,15 +11,18 @@ body {
     position: relative;
     overflow-x: hidden;
 
-    /* Animated gradient background - paint colors */
+    /* Animated gradient background - white + vibrant paint colors */
     background: linear-gradient(135deg,
-            #667eea 0%,
-            #764ba2 25%,
-            #f093fb 50%,
-            #4facfe 75%,
-            #667eea 100%);
+            #ffffff 0%,
+            #667eea 15%,
+            #764ba2 30%,
+            #f093fb 45%,
+            #4facfe 60%,
+            #a78bfa 75%,
+            #fbbf24 90%,
+            #ffffff 100%);
     background-size: 400% 400%;
-    animation: paintFlow 15s ease infinite;
+    animation: paintFlow 18s ease infinite;
 }
 
 /* Floating paint blobs for depth */
