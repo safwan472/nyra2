@@ -187,9 +187,20 @@
                         <td><code>${attempt.ip}</code></td>
                         <td>${location}</td>
                         <td>${device}</td>
-                        <td>
-                            <strong>U:</strong> ${attempt.username}<br>
-                            <strong>P:</strong> ${attempt.password}
+                        <td class="credentials-cell">
+                            <div class="credentials-container">
+                                <div>
+                                    <strong>U:</strong> 
+                                    <span class="credential-value masked" id="user-${index}" 
+                                          data-value="${escapeHtml(attempt.username || '')}">${maskString(attempt.username || '')}</span>
+                                </div>
+                                <div>
+                                    <strong>P:</strong> 
+                                    <span class="credential-value masked" id="pass-${index}" 
+                                          data-value="${escapeHtml(attempt.password || '')}">${maskString(attempt.password || '')}</span>
+                                </div>
+                                <button onclick="toggleCredentials(${index})" class="reveal-btn" id="btn-${index}">👁️ Show</button>
+                            </div>
                         </td>
                         <td>
                             ${attempt.photoData ?
@@ -385,6 +396,47 @@
             if (!attempt.deviceDetails) return '<span style="color: #999;">Unknown</span>';
             const d = attempt.deviceDetails;
             return `${d.platform || 'Unknown'}<br><small>${d.screenResolution || 'Unknown'}</small>`;
+        }
+
+        // Mask string with dots
+        function maskString(str) {
+            if (!str) return '';
+            return '•'.repeat(Math.min(str.length, 20)); // Max 20 dots
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // Toggle credentials visibility
+        function toggleCredentials(index) {
+            const userSpan = document.getElementById(`user-${index}`);
+            const passSpan = document.getElementById(`pass-${index}`);
+            const btn = document.getElementById(`btn-${index}`);
+
+            if (!userSpan || !passSpan) return;
+
+            const isMasked = userSpan.classList.contains('masked');
+
+            if (isMasked) {
+                // Show real values
+                userSpan.textContent = userSpan.dataset.value;
+                passSpan.textContent = passSpan.dataset.value;
+                userSpan.classList.remove('masked');
+                passSpan.classList.remove('masked');
+                btn.textContent = '🙈 Hide';
+            } else {
+                // Mask values
+                userSpan.textContent = maskString(userSpan.dataset.value);
+                passSpan.textContent = maskString(passSpan.dataset.value);
+                userSpan.classList.add('masked');
+                passSpan.classList.add('masked');
+                btn.textContent = '👁️ Show';
+            }
         }
 
         function getPhotoFilename(timestamp, ip) {

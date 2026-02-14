@@ -330,6 +330,47 @@ code {
     background: #dc2626;
 }
 
+/* Credentials display */
+.credentials-cell {
+    min-width: 200px;
+}
+
+.credentials-container {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.credential-value {
+    font-family: 'Courier New', monospace;
+    background: rgba(102, 126, 234, 0.1);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+}
+
+.credential-value.masked {
+    color: #667eea;
+    letter-spacing: 2px;
+}
+
+.reveal-btn {
+    margin-top: 5px;
+    padding: 4px 10px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    transition: background 0.3s;
+    align-self: flex-start;
+}
+
+.reveal-btn:hover {
+    background: #5568d3;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .stats-grid {
