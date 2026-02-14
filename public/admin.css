@@ -6,15 +6,104 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #0f0f1e;
     color: #fff;
     min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+
+    /* Animated gradient background - paint colors */
+    background: linear-gradient(135deg,
+            #667eea 0%,
+            #764ba2 25%,
+            #f093fb 50%,
+            #4facfe 75%,
+            #667eea 100%);
+    background-size: 400% 400%;
+    animation: paintFlow 15s ease infinite;
+}
+
+/* Floating paint blobs for depth */
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.3;
+    animation: floating 20s infinite alternate ease-in-out;
+    z-index: -1;
+}
+
+/* Blob 1: Soft Pink */
+body::before {
+    width: 50vmax;
+    height: 50vmax;
+    background: radial-gradient(circle,
+            rgba(240, 147, 251, 0.6),
+            rgba(245, 101, 101, 0.3),
+            transparent);
+    top: -10%;
+    left: -10%;
+    animation-delay: 0s;
+}
+
+/* Blob 2: Soft Blue */
+body::after {
+    width: 60vmax;
+    height: 60vmax;
+    background: radial-gradient(circle,
+            rgba(79, 172, 254, 0.6),
+            rgba(102, 126, 234, 0.3),
+            transparent);
+    bottom: -15%;
+    right: -15%;
+    animation-delay: -7s;
+}
+
+/* Paint flow animation */
+@keyframes paintFlow {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Floating blobs animation */
+@keyframes floating {
+    0% {
+        transform: translate(0, 0) scale(1) rotate(0deg);
+    }
+
+    25% {
+        transform: translate(6%, 10%) scale(1.06) rotate(4deg);
+    }
+
+    50% {
+        transform: translate(-4%, 6%) scale(0.96) rotate(-2deg);
+    }
+
+    75% {
+        transform: translate(8%, -4%) scale(1.04) rotate(3deg);
+    }
+
+    100% {
+        transform: translate(0, 0) scale(1) rotate(0deg);
+    }
 }
 
 .dashboard {
     max-width: 1400px;
     margin: 0 auto;
     padding: 20px;
+    position: relative;
+    z-index: 1;
 }
 
 /* Header */
@@ -22,17 +111,19 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 0;
+    padding: 25px;
     margin-bottom: 30px;
-    border-bottom: 2px solid #1e1e3f;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .header h1 {
     font-size: 28px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #fff;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .header-actions {
@@ -43,25 +134,31 @@ body {
 
 .admin-badge {
     padding: 8px 16px;
-    background: rgba(102, 126, 234, 0.2);
-    border: 1px solid #667eea;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 20px;
     font-size: 14px;
-    color: #667eea;
+    color: #fff;
+    font-weight: 600;
 }
 
 .logout-btn {
     padding: 10px 20px;
-    background: #ef4444;
+    background: rgba(239, 68, 68, 0.9);
+    backdrop-filter: blur(10px);
     color: white;
     text-decoration: none;
-    border-radius: 6px;
+    border-radius: 8px;
     font-weight: 600;
-    transition: background 0.3s;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .logout-btn:hover {
-    background: #dc2626;
+    background: rgba(220, 38, 38, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
 }
 
 /* Stats Grid */
@@ -73,46 +170,52 @@ body {
 }
 
 .stat-card {
-    background: #1a1a2e;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
     padding: 25px;
-    border-radius: 12px;
-    border: 1px solid #2d2d44;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
     display: flex;
     gap: 20px;
     align-items: center;
-    transition: transform 0.3s, border-color 0.3s;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .stat-card:hover {
     transform: translateY(-5px);
-    border-color: #667eea;
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.2);
 }
 
 .stat-icon {
     font-size: 40px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
 .stat-content h3 {
     font-size: 32px;
     margin-bottom: 5px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #fff;
+    font-weight: 700;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .stat-content p {
-    color: #888;
+    color: rgba(255, 255, 255, 0.8);
     font-size: 14px;
+    font-weight: 500;
 }
 
 /* Section */
 .section {
-    background: #1a1a2e;
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
     padding: 25px;
     margin-bottom: 30px;
-    border: 1px solid #2d2d44;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .section-header {
