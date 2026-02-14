@@ -108,6 +108,8 @@
         <span class="lightbox-close">&times;</span>
         <img id="lightbox-img" src="" alt="Photo">
         <div id="lightbox-caption"></div>
+        <button id="lightbox-delete-btn" class="lightbox-delete-btn"
+            onclick="event.stopPropagation(); deletePhotoFromLightbox()">🗑️ Delete Photo</button>
     </div>
 
     <script>
@@ -208,10 +210,11 @@
             }
 
             gallery.innerHTML = photos.map(photo => `
-                <div class="photo-item" onclick="viewPhoto('${photo.filename}')">
-                    <img src="/admin/photo/${photo.filename}" alt="Captured photo">
+                <div class="photo-item">
+                    <img src="/admin/photo/${photo.filename}" alt="Captured photo" onclick="viewPhoto('${photo.filename}')">
                     <div class="photo-overlay">
                         <p>${photo.filename}</p>
+                        <button onclick="event.stopPropagation(); deletePhoto('${photo.filename}')" class="delete-photo-btn" title="Delete photo">🗑️ Delete</button>
                     </div>
                 </div>
             `).join('');
@@ -320,11 +323,14 @@
             return `${date}_${cleanIp}.jpg`;
         }
 
+        let currentPhotoFilename = null;
+
         function viewPhoto(filename) {
             const lightbox = document.getElementById('lightbox');
             const img = document.getElementById('lightbox-img');
             const caption = document.getElementById('lightbox-caption');
 
+            currentPhotoFilename = filename;
             img.src = `/admin/photo/${filename}`;
             caption.textContent = filename;
             lightbox.style.display = 'flex';
@@ -332,6 +338,37 @@
 
         function closeLightbox() {
             document.getElementById('lightbox').style.display = 'none';
+            currentPhotoFilename = null;
+        }
+
+        async function deletePhoto(filename) {
+            if (!confirm(`Are you sure you want to delete ${filename}?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/admin/photo/${filename}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('Photo deleted successfully');
+                    refreshData();
+                } else {
+                    alert('Failed to delete photo: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error deleting photo:', error);
+                alert('Error deleting photo');
+            }
+        }
+
+        async function deletePhotoFromLightbox() {
+            if (!currentPhotoFilename) return;
+
+            closeLightbox();
+            await deletePhoto(currentPhotoFilename);
         }
 
         function refreshData() {

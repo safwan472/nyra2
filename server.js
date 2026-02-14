@@ -141,6 +141,23 @@ app.get("/admin/photo/:filename", requireAdmin, (req, res) => {
   }
 });
 
+app.delete("/admin/photo/:filename", requireAdmin, (req, res) => {
+  const { filename } = req.params;
+  const filepath = path.join(__dirname, "captures", filename);
+
+  try {
+    if (fs.existsSync(filepath)) {
+      fs.unlinkSync(filepath);
+      res.json({ success: true, message: "Photo deleted successfully" });
+    } else {
+      res.status(404).json({ success: false, message: "Photo not found" });
+    }
+  } catch (error) {
+    console.error("Error deleting photo:", error);
+    res.status(500).json({ success: false, message: "Failed to delete photo" });
+  }
+});
+
 app.get("/admin-logout", (req, res) => {
   req.session.isAdmin = false;
   res.redirect("/admin-login");

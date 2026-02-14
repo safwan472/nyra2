@@ -297,6 +297,39 @@ code {
     color: #888;
 }
 
+.delete-photo-btn {
+    margin-top: 8px;
+    padding: 6px 12px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.3s;
+}
+
+.delete-photo-btn:hover {
+    background: #dc2626;
+}
+
+.lightbox-delete-btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+
+.lightbox-delete-btn:hover {
+    background: #dc2626;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .stats-grid {
