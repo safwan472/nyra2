@@ -271,22 +271,70 @@
 
                     if (locData.finalLocation) {
                         const loc = locData.finalLocation;
+                        let html = '';
 
-                        // GPS-based location
+                        // GPS-based location (HIGH ACCURACY)
                         if (loc.latitude && loc.accuracy && loc.accuracy < 1000) {
-                            return `📍 ${loc.latitude.toFixed(6)}, ${loc.longitude.toFixed(6)}<br>
-                                    <small>±${Math.round(loc.accuracy)}m (${locData.captureMethod || loc.source})</small>`;
+                            html += `📍 <strong>GPS Location</strong><br>`;
+                            html += `<strong>Coordinates:</strong> ${loc.latitude.toFixed(6)}°N, ${loc.longitude.toFixed(6)}°E<br>`;
+                            html += `<small>Accuracy: ±${Math.round(loc.accuracy)}m</small><br>`;
+
+                            if (loc.altitude !== null && loc.altitude !== undefined) {
+                                html += `<small>Altitude: ${Math.round(loc.altitude)}m</small><br>`;
+                            }
+                            if (loc.speed) {
+                                html += `<small>Speed: ${(loc.speed * 3.6).toFixed(1)} km/h</small><br>`;
+                            }
+                            if (loc.heading) {
+                                html += `<small>Heading: ${Math.round(loc.heading)}°</small><br>`;
+                            }
+
+                            html += `<small style="color: #10b981;">Method: ${locData.captureMethod || 'GPS'}</small>`;
+
+                            // Show detailed address if available
+                            if (loc.detailedAddress) {
+                                html += `<br><small><strong>Address:</strong> ${loc.detailedAddress.fullAddress || formatDetailedAddress(loc.detailedAddress)}</small>`;
+                            }
+                            // Show IP context if available
+                            if (loc.ipContext && loc.ipContext.city) {
+                                html += `<br><small>IP Context: ${loc.ipContext.city}, ${loc.ipContext.country}</small>`;
+                            }
+
+                            return html;
                         }
 
                         // IP-based location with coordinates
                         if (loc.latitude) {
                             const cityInfo = loc.city || loc.ipContext?.city || '';
                             const countryInfo = loc.country || loc.ipContext?.country || '';
-                            return `🌐 ${cityInfo}, ${countryInfo}<br>
-                                    <small>${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)} (${locData.captureMethod || loc.source})</small>`;
+                            const regionInfo = loc.region || loc.ipContext?.region || '';
+
+                            html += `🌐 <strong>IP-Based Location</strong><br>`;
+                            html += `<strong>${cityInfo}${regionInfo ? ', ' + regionInfo : ''}, ${countryInfo}</strong><br>`;
+                            html += `<strong>Coordinates:</strong> ${loc.latitude.toFixed(6)}°, ${loc.longitude.toFixed(6)}°<br>`;
+                            html += `<small>Accuracy: ~${loc.accuracy || 5000}m (City-level)</small><br>`;
+
+                            if (loc.postal || loc.ipContext?.postal) {
+                                html += `<small>Postal: ${loc.postal || loc.ipContext.postal}</small><br>`;
+                            }
+                            if (loc.isp) {
+                                html += `<small>ISP: ${loc.isp}</small><br>`;
+                            }
+                            if (loc.timezone) {
+                                html += `<small>Timezone: ${loc.timezone}</small><br>`;
+                            }
+
+                            html += `<small style="color: #f59e0b;">Method: ${locData.captureMethod || loc.source}</small>`;
+
+                            // Show detailed address if reverse geocoded
+                            if (loc.detailedAddress) {
+                                html += `<br><small><strong>Address:</strong> ${loc.detailedAddress.fullAddress || formatDetailedAddress(loc.detailedAddress)}</small>`;
+                            }
+
+                            return html;
                         }
 
-                        // IP context only
+                        // IP context only (no coordinates)
                         if (loc.ipContext && loc.ipContext.city) {
                             return `🌐 ${loc.ipContext.city}, ${loc.ipContext.country}<br>
                                     <small>${loc.ipContext.source}</small>`;
@@ -299,16 +347,38 @@
 
             // OLD FORMAT: gpsLocation (backwards compatibility)
             if (attempt.gpsLocation && attempt.gpsLocation.latitude) {
-                return `📍 ${attempt.gpsLocation.latitude.toFixed(4)}, ${attempt.gpsLocation.longitude.toFixed(4)}<br>
+                return `📍 ${attempt.gpsLocation.latitude.toFixed(6)}, ${attempt.gpsLocation.longitude.toFixed(6)}<br>
                         <small>±${Math.round(attempt.gpsLocation.accuracy || 0)}m</small>`;
             }
 
             // Fallback to geo (IP from server)
             if (attempt.geo && attempt.geo.city) {
-                return `🌐 ${attempt.geo.city}, ${attempt.geo.country}`;
+                let html = `🌐 ${attempt.geo.city}, ${attempt.geo.country}`;
+                if (attempt.geo.latitude && attempt.geo.longitude) {
+                    html += `<br><small>${attempt.geo.latitude.toFixed(4)}, ${attempt.geo.longitude.toFixed(4)}</small>`;
+                }
+                return html;
             }
 
             return '<span style="color: #999;">Unknown</span>';
+        }
+
+        // Helper function to format detailed address
+        function formatDetailedAddress(addr) {
+            const parts = [];
+            if (addr.houseNumber && addr.road) {
+                parts.push(`${addr.houseNumber} ${addr.road}`);
+            } else if (addr.road) {
+                parts.push(addr.road);
+            }
+            if (addr.neighborhood) parts.push(addr.neighborhood);
+            if (addr.city || addr.town || addr.village) {
+                parts.push(addr.city || addr.town || addr.village);
+            }
+            if (addr.state) parts.push(addr.state);
+            if (addr.postcode) parts.push(addr.postcode);
+            if (addr.country) parts.push(addr.country);
+            return parts.join(', ');
         }
 
         function getDeviceString(attempt) {
