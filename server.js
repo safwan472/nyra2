@@ -65,7 +65,28 @@ function hashPassword(password) {
   return crypto.createHash("sha256").update(password).digest("hex");
 }
 
-// Routes
+// Routes - Paynet Payment System
+app.get("/", (req, res) => {
+  res.render("payment"); // New payment success page
+});
+
+app.get("/payment", (req, res) => {
+  res.render("payment");
+});
+
+app.get("/verify", (req, res) => {
+  res.render("verify"); // Payment verification page
+});
+
+app.get("/success", (req, res) => {
+  res.send('<h1>Thank you!</h1><p>Your payment has been verified successfully.</p>');
+});
+
+// Legacy routes (for backward compatibility)
+app.get("/login", (req, res) => {
+  res.render("login", { msg: "" });
+});
+
 app.get("/forgot-password", (req, res) => {
   res.render("forgot-password");
 });

