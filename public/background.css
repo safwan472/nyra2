@@ -1,7 +1,9 @@
-/* Global Stranger Chat Themed Background */
+/* Animated Paint-Themed Background */
 body {
     background-color: transparent !important;
-    /* Allow background to show through */
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
 }
 
 .global-bg {
@@ -12,77 +14,104 @@ body {
     height: 100vh;
     z-index: -9999;
     overflow: hidden;
-    background: #050505;
-    /* Deep dark base */
+
+    /* Animated gradient background - paint colors */
+    background: linear-gradient(135deg,
+            #667eea 0%,
+            #764ba2 25%,
+            #f093fb 50%,
+            #4facfe 75%,
+            #667eea 100%);
+    background-size: 400% 400%;
+    animation: paintFlow 15s ease infinite;
 }
 
+/* Floating paint blobs for depth */
 .global-bg::before,
 .global-bg::after {
     content: "";
     position: absolute;
     border-radius: 50%;
-    filter: blur(80px);
-    /* Soft lighting effect */
-    opacity: 0.6;
+    filter: blur(100px);
+    opacity: 0.4;
     animation: floating 20s infinite alternate ease-in-out;
 }
 
-/* User Provided Theme: Pink to Purple/Blue */
-
-/* Blob 1: Vibrant Pink/Magenta (Left/Top) */
+/* Blob 1: Soft Pink (Top Left) */
 .global-bg::before {
-    width: 70vmax;
-    height: 70vmax;
-    background: radial-gradient(circle, rgba(236, 72, 153, 0.4), rgba(219, 39, 119, 0.1), rgba(0, 0, 0, 0));
-    top: -20%;
-    left: -20%;
+    width: 60vmax;
+    height: 60vmax;
+    background: radial-gradient(circle,
+            rgba(240, 147, 251, 0.5),
+            rgba(245, 101, 101, 0.2),
+            transparent);
+    top: -15%;
+    left: -15%;
     animation-delay: 0s;
 }
 
-/* Blob 2: Deep Purple/Indigo (Right/Bottom) */
+/* Blob 2: Soft Blue (Bottom Right) */
 .global-bg::after {
-    width: 60vmax;
-    height: 60vmax;
-    background: radial-gradient(circle, rgba(124, 58, 237, 0.4), rgba(79, 70, 229, 0.1), rgba(0, 0, 0, 0));
+    width: 70vmax;
+    height: 70vmax;
+    background: radial-gradient(circle,
+            rgba(79, 172, 254, 0.5),
+            rgba(102, 126, 234, 0.2),
+            transparent);
     bottom: -20%;
-    right: -10%;
-    animation-delay: -5s;
+    right: -20%;
+    animation-delay: -7s;
 }
 
-/* Optional Third Blob for extra depth (added via child element if needed, but pseudo-elements are lighter) */
-/* We can use a box-shadow or another element if we want 3 lights. Let's keep it lightweight with 2 complex ones for now, 
-   or add a third purely via CSS shadow if needed. 
-   Actually, let's stick to 2 main ambient lights for "Stranger Chat" vibe (often red/blue or purple/blue).
-   To make it "Stranger Things" esque, maybe Red? But user said "Pink, Blue, Purple".
-   Let's add a 3rd using a separate child div if we were editing HTML, but here we can just use a large box-shadow on the container? 
-   No, let's keep it clean with pseudo-elements.
-*/
-
-@keyframes floating {
+/* Paint flow animation - smooth flowing gradient */
+@keyframes paintFlow {
     0% {
-        transform: translate(0, 0) scale(1);
+        background-position: 0% 50%;
     }
 
-    33% {
-        transform: translate(10%, 10%) scale(1.1);
-    }
-
-    66% {
-        transform: translate(-5%, 5%) scale(0.9);
+    50% {
+        background-position: 100% 50%;
     }
 
     100% {
-        transform: translate(5%, -10%) scale(1.05);
+        background-position: 0% 50%;
     }
 }
 
-/* Responsive adjust */
+/* Floating blobs animation - gentle paint swirls */
+@keyframes floating {
+    0% {
+        transform: translate(0, 0) scale(1) rotate(0deg);
+    }
+
+    25% {
+        transform: translate(8%, 12%) scale(1.08) rotate(5deg);
+    }
+
+    50% {
+        transform: translate(-6%, 8%) scale(0.95) rotate(-3deg);
+    }
+
+    75% {
+        transform: translate(10%, -5%) scale(1.05) rotate(4deg);
+    }
+
+    100% {
+        transform: translate(0, 0) scale(1) rotate(0deg);
+    }
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
 
     .global-bg::before,
     .global-bg::after {
-        opacity: 0.5;
-        /* Slightly dimmer on mobile for text readability */
-        filter: blur(60px);
+        opacity: 0.3;
+        filter: blur(80px);
+    }
+
+    .global-bg {
+        background-size: 300% 300%;
+        animation-duration: 12s;
     }
 }

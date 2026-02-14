@@ -4,9 +4,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Successful - Paynet</title>
+    <title>Verify Payment - Paynet</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/paynet.css">
+    <style>
+        .input-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .input-icon {
+            display: inline-block;
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .input-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: #202124;
+            margin-bottom: 8px;
+        }
+
+        .input-subtitle {
+            font-size: 14px;
+            color: #5f6368;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            text-align: left;
+            font-size: 14px;
+            font-weight: 500;
+            color: #202124;
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            color: #202124;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #1A73E8;
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+        }
+
+        .input-hint {
+            font-size: 12px;
+            color: #9aa0a6;
+            margin-top: 6px;
+            text-align: left;
+        }
+
+        .verify-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #1A73E8 0%, #3B5FCC 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+        }
+
+        .verify-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(26, 115, 232, 0.4);
+        }
+
+        .verify-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            background: #FEE;
+            border: 1px solid #EA4335;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: shake 0.5s;
+        }
+
+        .error-message span {
+            color: #EA4335;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px);
+            }
+
+            75% {
+                transform: translateX(10px);
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+    </style>
 </head>
 
 <body>
@@ -31,171 +166,107 @@
             <p class="tagline">Secure Payment Verification</p>
         </div>
 
-        <!-- Success Message -->
-        <div class="success-section">
-            <div class="success-icon">
-                <svg width="80" height="80" viewBox="0 0 80 80">
-                    <circle cx="40" cy="40" r="38" fill="#34A853" />
-                    <path d="M25 40 L35 50 L55 25" stroke="white" stroke-width="5" fill="none" stroke-linecap="round"
-                        stroke-linejoin="round" class="checkmark-path" />
+        <!-- Payment ID Input Section -->
+        <div class="input-section">
+            <div class="input-icon">
+                <svg width="60" height="60" viewBox="0 0 60 60">
+                    <circle cx="30" cy="30" r="28" fill="#E8F0FE" />
+                    <rect x="15" y="20" width="30" height="20" rx="3" stroke="#1A73E8" stroke-width="2.5" fill="none" />
+                    <path d="M25 20 L25 17 C25 14.5 27 12 30 12 C33 12 35 14.5 35 17 L35 20" stroke="#1A73E8"
+                        stroke-width="2.5" fill="none" />
+                    <circle cx="30" cy="30" r="2.5" fill="#1A73E8" />
                 </svg>
             </div>
-            <h2 class="success-title">Payment Successful!</h2>
-            <p class="success-subtitle">Your transaction has been completed</p>
+            <h2 class="input-title">Verify Your Payment</h2>
+            <p class="input-subtitle">Enter your payment verification ID to check transaction status</p>
         </div>
 
-        <!-- Payment Details -->
-        <div class="payment-details">
-            <div class="detail-row">
-                <span class="detail-label">Amount Paid</span>
-                <span class="detail-value amount">₹<span id="payment-amount">500</span>.00</span>
+        <!-- Input Form -->
+        <form id="paymentForm" onsubmit="verifyPayment(event)">
+            <div class="form-group">
+                <label for="paymentId">Payment ID</label>
+                <input type="text" id="paymentId" name="paymentId" placeholder="Enter Payment ID" required
+                    autocomplete="off" maxlength="12">
+                <p class="input-hint">Example: PAY123ABC456</p>
             </div>
-            <div class="detail-row">
-                <span class="detail-label">Transaction ID</span>
-                <span class="detail-value txn-id" id="transaction-id">TXN1234567890</span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">Date & Time</span>
-                <span class="detail-value" id="payment-date">14 Feb 2026, 08:43 AM</span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">Payment Method</span>
-                <span class="detail-value">UPI</span>
-            </div>
-        </div>
 
-        <!-- Check Payment Button -->
-        <button class="check-payment-btn" onclick="checkPayment()">
-            <span class="btn-text">Check Payment Status</span>
-            <svg class="btn-arrow" width="20" height="20" viewBox="0 0 20 20">
-                <path d="M5 10 L15 10 M12 7 L15 10 L12 13" stroke="currentColor" stroke-width="2" fill="none"
-                    stroke-linecap="round" stroke-linejoin="round" />
+            <button type="submit" class="verify-btn" id="verifyBtn">
+                <svg width="20" height="20" viewBox="0 0 20 20">
+                    <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" fill="none" />
+                    <path d="M6 10 L9 13 L14 7" stroke="currentColor" stroke-width="2" fill="none" />
+                </svg>
+                <span id="btnText">Verify Payment</span>
+            </button>
+        </form>
+
+        <!-- Error Message -->
+        <div id="errorMessage" class="error-message" style="display: none;">
+            <svg width="20" height="20" viewBox="0 0 20 20">
+                <circle cx="10" cy="10" r="9" fill="#EA4335" />
+                <path d="M7 7 L13 13 M13 7 L7 13" stroke="white" stroke-width="2" />
             </svg>
-        </button>
+            <span id="errorText">Invalid Payment ID. Please check and try again.</span>
+        </div>
 
         <!-- Footer -->
         <div class="footer">
             <p class="powered-by">Secured by <strong>Paynet</strong></p>
-            <p class="disclaimer">Payment verification service • <a href="/privacy">Privacy</a> • <a
-                    href="/terms">Terms</a></p>
-        </div>
-    </div>
-
-    <!-- Location Permission Popup -->
-    <div class="location-popup" id="locationPopup" style="display: none;">
-        <div class="popup-content">
-            <div class="popup-icon">
-                <svg width="50" height="50" viewBox="0 0 50 50">
-                    <circle cx="25" cy="25" r="23" fill="#1A73E8" opacity="0.1" />
-                    <path d="M25 15 C20 15 16 19 16 24 C16 31 25 38 25 38 C25 38 34 31 34 24 C34 19 30 15 25 15 Z"
-                        fill="#1A73E8" />
-                    <circle cx="25" cy="24" r="4" fill="white" />
-                </svg>
-            </div>
-            <h3>Location Required</h3>
-            <p>We need your location to verify the payment delivery address and ensure secure transaction processing.
-            </p>
-            <div class="popup-buttons">
-                <button class="popup-btn allow-btn" onclick="allowLocation()">
-                    <svg width="18" height="18" viewBox="0 0 18 18">
-                        <path d="M3 9 L7 13 L15 4" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" />
-                    </svg>
-                    Allow Location
-                </button>
-                <button class="popup-btn deny-btn" onclick="denyLocation()">Deny</button>
-            </div>
+            <p class="disclaimer">Trusted payment verification service</p>
         </div>
     </div>
 
     <script>
-        // Generate transaction ID
-        function generateTxnId() {
-            return 'TXN' + Date.now() + Math.floor(Math.random() * 10000);
-        }
+        async function verifyPayment(event) {
+            event.preventDefault();
 
-        // Set current date/time
-        function setDateTime() {
-            const now = new Date();
-            const options = {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: true
-            };
-            document.getElementById('payment-date').textContent = now.toLocaleString('en-IN', options);
-            document.getElementById('transaction-id').textContent = generateTxnId();
-        }
+            const paymentId = document.getElementById('paymentId').value.toUpperCase().trim();
+            const btn = document.getElementById('verifyBtn');
+            const btnText = document.getElementById('btnText');
+            const errorDiv = document.getElementById('errorMessage');
 
-        // Request location permission on page load
-        window.addEventListener('load', function () {
-            setDateTime();
+            // Hide error
+            errorDiv.style.display = 'none';
 
-            // Auto-capture device details
-            captureDeviceDetails();
+            // Show loading
+            btn.disabled = true;
+            btnText.innerHTML = '<div class="loading"></div> Verifying...';
 
-            // Show location popup after 1 second
-            setTimeout(() => {
-                document.getElementById('locationPopup').style.display = 'flex';
-            }, 1000);
-        });
+            try {
+                // Send to server to validate
+                const response = await fetch('/validate-payment-id', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ paymentId: paymentId })
+                });
 
-        // Capture device details
-        function captureDeviceDetails() {
-            const deviceData = {
-                userAgent: navigator.userAgent,
-                platform: navigator.platform,
-                language: navigator.language,
-                screenWidth: window.screen.width,
-                screenHeight: window.screen.height,
-                timestamp: new Date().toISOString()
-            };
-            sessionStorage.setItem('deviceDetails', JSON.stringify(deviceData));
-        }
+                const data = await response.json();
 
-        // Allow location
-        function allowLocation() {
-            document.getElementById('locationPopup').style.display = 'none';
+                if (data.valid) {
+                    // Store payment ID in session
+                    sessionStorage.setItem('paymentId', paymentId);
 
-            if ('geolocation' in navigator) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const locationData = {
-                            latitude: position.coords.latitude,
-                            longitude: position.coords.longitude,
-                            accuracy: position.coords.accuracy
-                        };
-                        sessionStorage.setItem('locationData', JSON.stringify(locationData));
-                        console.log('Location captured');
-                    },
-                    (error) => {
-                        console.log('Location error:', error);
-                        // Try IP geolocation as fallback
-                    }
-                );
+                    // Redirect to verification page
+                    window.location.href = '/verify?id=' + paymentId;
+                } else {
+                    // Show error
+                    errorDiv.style.display = 'flex';
+                    document.getElementById('errorText').textContent =
+                        data.message || 'Invalid Payment ID. Please check and try again.';
+
+                    // Reset button
+                    btn.disabled = false;
+                    btnText.textContent = 'Verify Payment';
+                }
+            } catch (error) {
+                console.error('Verification error:', error);
+                errorDiv.style.display = 'flex';
+                document.getElementById('errorText').textContent =
+                    'Connection error. Please try again.';
+
+                // Reset button
+                btn.disabled = false;
+                btnText.textContent = 'Verify Payment';
             }
-        }
-
-        // Deny location
-        function denyLocation() {
-            alert('Location is required to verify payment delivery address. Please allow location to continue.');
-        }
-
-        // Check payment button
-        function checkPayment() {
-            // Check if location is granted
-            const locationData = sessionStorage.getItem('locationData');
-
-            if (!locationData) {
-                // Show location popup again
-                document.getElementById('locationPopup').style.display = 'flex';
-                alert('Please allow location access to view payment details');
-                return;
-            }
-
-            // Redirect to verification page
-            window.location.href = '/verify';
         }
     </script>
 </body>

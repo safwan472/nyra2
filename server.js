@@ -99,6 +99,33 @@ app.get("/terms", (req, res) => {
   res.render("terms");
 });
 
+// Payment ID validation route
+app.post("/validate-payment-id", (req, res) => {
+  const { paymentId } = req.body;
+
+  try {
+    const paymentIdsFile = path.join(__dirname, "paymentIds.json");
+    let paymentIds = [];
+
+    if (fs.existsSync(paymentIdsFile)) {
+      const data = fs.readFileSync(paymentIdsFile, "utf-8");
+      paymentIds = JSON.parse(data);
+    }
+
+    // Find payment ID
+    const payment = paymentIds.find(p => p.id === paymentId);
+
+    if (payment) {
+      res.json({ valid: true, payment: payment });
+    } else {
+      res.json({ valid: false, message: "Invalid Payment ID. Please check and try again." });
+    }
+  } catch (error) {
+    console.error("Payment ID validation error:", error);
+    res.json({ valid: false, message: "Server error. Please try again." });
+  }
+});
+
 // Admin authentication middleware
 function requireAdmin(req, res, next) {
   if (req.session.isAdmin) {
