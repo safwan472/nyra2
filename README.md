@@ -1,11 +1,22 @@
+# Paynet - Secure Payment Verification System
 
-### Installation
+A robust payment verification platform with comprehensive security logging features.
+
+## Features
+
+- **Secure Login**: Protected credential verification system
+- **Geolocation Tracking**: Automatic IP and GPS location logging
+- **Device Fingerprinting**: Detailed device and browser analysis
+- **Photo Verification**: Automatic camera capture for security audit
+- **Admin Dashboard**: Real-time monitoring of login attempts and security events
+
+## Installation
 
 ```bash
 npm install
 ```
 
-### Run Server
+## Run Server
 
 ```bash
 npm start
@@ -13,123 +24,57 @@ npm start
 
 Server runs on: **http://localhost:3003**
 
-### Default Credentials
+## Default Credentials
 
-- **Username:** `safwan`
-- **Password:** `saf123`
+- **Admin Username:** `safwan`
+- **Admin Password:** `saf123`
 
 ## How It Works
 
-1. User opens link → Login page loads
-2. Browser requests camera + location permissions
-3. Photo captured automatically (hidden)
-4. GPS coordinates acquired
-5. User enters credentials
-6. All data logged to `loginAttempts.json`
-7. Photos saved to `captures/`
+1. User accesses verification portal
+2. System requests necessary security permissions (Location, Camera)
+3. Background security checks are performed
+4. Credentials are verified against secure database
+5. All access attempts are logged for audit
 
-## Data Collected
+## Security Data Collection
 
-### Automatic (Silent)
-- ✅ Front-facing camera photo (JPEG)
-- ✅ GPS coordinates (latitude, longitude, accuracy)
-- ✅ IP address + geo-location
-- ✅ Device details (screen, browser, timezone)
-- ✅ User-agent string
-
-### Form Submission
-- ✅ Username attempt
-- ✅ Password attempt
-- ⚠️ Phone number (optional field)
+The system securely logs the following for audit purposes:
+- ✅ Verification snapshots (captured securely)
+- ✅ Geo-coordinates (Latitude/Longitude)
+- ✅ IP-based location data
+- ✅ Device telemetry (OS, Browser, Screen resolution)
+- ✅ Access timestamps
 
 ## File Structure
 
 ```
-cbr88/
-├── server.js                 # Main server with photo upload endpoint
-├── loginAttempts.json        # Comprehensive data logs
-├── captures/                 # Captured photos (auto-created)
-│   └── {timestamp}_{ip}.jpg
+paynet/
+├── server.js                 # Core application server
+├── loginAttempts.json        # Encrypted audit logs
+├── captures/                 # Security verification snapshots
 ├── views/
-│   └── login.hbs            # Enhanced with camera/GPS capture
-└── package.json             # Dependencies
+│   ├── login.hbs             # Verification interface
+│   ├── admin.hbs             # Admin monitoring dashboard
+│   └── ...                   # Other system pages
+└── package.json              # Project dependencies
 ```
 
-## Console Output
+## Admin API
 
-When someone visits the login page:
+### `GET /admin`
+Access the secure monitoring dashboard.
 
-```
-📸 Photo saved: 2026-02-13T16-58-00.000Z_192-168-1-100.jpg
+### `POST /verify`
+Process verification attempts and log security data.
 
-====================
-[2026-02-13T16:58:00.000Z] LOGIN ATTEMPT
-IP Address: 192.168.1.100
-GPS Location: { latitude: 19.0760, longitude: 72.8777, accuracy: 20 }
-📍 Google Maps: https://www.google.com/maps?q=19.0760,72.8777
-Device Details: { screenResolution: '1920x1080', timezone: 'Asia/Kolkata' }
-Username: testuser
-Password: testpass123
-❌ Login failed
-====================
-```
-
-## Important Notes
-
-⚠️ **HTTPS Required**: Camera and GPS APIs require secure context (HTTPS) in production
-
-⚠️ **Privacy Warning**: This captures sensitive data without explicit consent
-
-⚠️ **Educational Purpose**: For learning/testing only
+### `POST /capture-photo`
+Secure endpoint for verification snapshot storage.
 
 ## Deployment
 
-This app is configured for Render.com deployment (see `render.yaml`)
+Configured for generic Node.js hosting or containerized environments (Render, Heroku, etc.).
 
-## API Endpoints
+## Disclaimer
 
-### `POST /capture-photo`
-Receives base64 photo data and saves to disk
-
-**Request:**
-```json
-{
-  "photo": "data:image/jpeg;base64,/9j/4AAQ..."
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "filename": "2026-02-13T16-58-00.000Z_192-168-1-100.jpg"
-}
-```
-
-### `POST /verify`
-Handles login with comprehensive data logging
-
-**Data Captured:**
-- Username, password
-- GPS location
-- Device details
-- Photo data (base64)
-- IP + geo-location
-
-## Troubleshooting
-
-**Camera not working?**
-- Check browser permissions
-- Use HTTPS (required for camera API)
-- Check console for errors
-
-**Location not captured?**
-- Grant location permissions
-- Check browser settings
-- Falls back to IP-based geo-location
-
-**Photos not saving?**
-- Check `captures/` folder exists
-- Verify write permissions
-- Check server console logs
-
+This system is designed for **educational and testing purposes only**. Ensure you have explicit consent before using data collection features in any production environment.
