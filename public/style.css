@@ -91,6 +91,38 @@ body {
     }
 }
 
+/* Disclaimer Banner */
+.disclaimer-banner {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(236, 72, 153, 0.1));
+    border: 1px solid #667eea;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.disclaimer-banner h2 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    color: #667eea;
+}
+
+.disclaimer-banner p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #ddd;
+}
+
+.disclaimer-banner a {
+    color: #667eea;
+    text-decoration: none;
+}
+
+.disclaimer-banner a:hover {
+    text-decoration: underline;
+}
+
 .sub {
     font-size: 14px;
     color: #b0b0b0;

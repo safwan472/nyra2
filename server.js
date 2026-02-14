@@ -70,6 +70,14 @@ app.get("/forgot-password", (req, res) => {
   res.render("forgot-password");
 });
 
+app.get("/privacy", (req, res) => {
+  res.render("privacy");
+});
+
+app.get("/terms", (req, res) => {
+  res.render("terms");
+});
+
 // Admin authentication middleware
 function requireAdmin(req, res, next) {
   if (req.session.isAdmin) {
