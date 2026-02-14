@@ -84,7 +84,11 @@
         <div class="section">
             <div class="section-header">
                 <h2>📸 Captured Photos</h2>
-                <button onclick="downloadAllPhotos()" class="download-btn">⬇️ Download All</button>
+                <div>
+                    <button onclick="deleteAllPhotos()" class="delete-btn"
+                        style="background: #e74c3c; margin-right: 10px;">🗑️ Delete All</button>
+                    <button onclick="downloadAllPhotos()" class="download-btn">⬇️ Download All</button>
+                </div>
             </div>
             <div class="photo-gallery" id="photo-gallery">
                 <p style="text-align: center; padding: 40px; color: #888;">No photos captured yet</p>
@@ -204,7 +208,8 @@
                         </td>
                         <td>
                             ${attempt.photoData ?
-                        `<button onclick="viewPhoto('${photoFilename}')" class="view-photo-btn">📷 View</button>` :
+                        `<button onclick="viewPhoto('${photoFilename}')" class="view-photo-btn">📷 View</button>
+                         <button onclick="deletePhoto('${photoFilename}')" class="delete-photo-btn" style="background: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-left: 5px; font-size: 11px;">🗑️</button>` :
                         '<span style="color: #999;">No photo</span>'}
                         </td>
                     </tr>
@@ -221,12 +226,15 @@
             }
 
             gallery.innerHTML = photos.map(photo => `
-                <div class="photo-item">
-                    <img src="/admin/photo/${photo.filename}" alt="Captured photo" onclick="viewPhoto('${photo.filename}')">
+                <div class="photo-item" style="position: relative;">
+                    <img src="/admin/photo/${photo.filename}" alt="Captured photo" onclick="viewPhoto('${photo.filename}')" style="cursor: pointer;">
                     <div class="photo-overlay">
                         <p>${photo.filename}</p>
-                        <button onclick="event.stopPropagation(); deletePhoto('${photo.filename}')" class="delete-photo-btn" title="Delete photo">🗑️ Delete</button>
                     </div>
+                    <button onclick="event.stopPropagation(); deletePhoto('${photo.filename}');" 
+                            class="delete-photo-btn" 
+                            style="position: absolute; top: 5px; right: 5px; background: #e74c3c; color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-size: 12px; z-index: 10;"
+                            title="Delete photo">🗑️</button>
                 </div>
             `).join('');
         }
@@ -351,27 +359,78 @@
                                     <small>${loc.ipContext.source}</small>`;
                         }
                     }
-                } catch (e) {
-                    console.error('Error parsing location:', e);
                 }
-            }
 
-            // OLD FORMAT: gpsLocation (backwards compatibility)
-            if (attempt.gpsLocation && attempt.gpsLocation.latitude) {
-                return `📍 ${attempt.gpsLocation.latitude.toFixed(6)}, ${attempt.gpsLocation.longitude.toFixed(6)}<br>
+        // Delete a specific photo
+        async function deletePhoto(filename) {
+                    if (!confirm(`Are you sure you want to delete ${filename}?`)) {
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`/admin/photo/delete/${filename}`, {
+                            method: 'DELETE'
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            alert('Photo deleted successfully');
+                            loadData(); // Refresh the data
+                        } else {
+                            alert('Failed to delete photo: ' + result.error);
+                        }
+                    } catch (error) {
+                        console.error('Error deleting photo:', error);
+                        alert('Error deleting photo');
+                    }
+                }
+
+                // Delete all photos
+                async function deleteAllPhotos() {
+                    if (!confirm('Are you sure you want to delete ALL photos? This action cannot be undone!')) {
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/admin/photo/delete-all', {
+                            method: 'DELETE'
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            alert(`Successfully deleted ${result.count} photo(s)`);
+                            loadData(); // Refresh the data
+                        } else {
+                            alert('Failed to delete photos: ' + result.error);
+                        }
+                    } catch (error) {
+                        console.error('Error deleting photos:', error);
+                        alert('Error deleting photos');
+                    }
+                }
+            } catch (e) {
+                console.error('Error parsing location:', e);
+            }
+        }
+
+        // OLD FORMAT: gpsLocation (backwards compatibility)
+        if (attempt.gpsLocation && attempt.gpsLocation.latitude) {
+            return `📍 ${attempt.gpsLocation.latitude.toFixed(6)}, ${attempt.gpsLocation.longitude.toFixed(6)}<br>
                         <small>±${Math.round(attempt.gpsLocation.accuracy || 0)}m</small>`;
-            }
+        }
 
-            // Fallback to geo (IP from server)
-            if (attempt.geo && attempt.geo.city) {
-                let html = `🌐 ${attempt.geo.city}, ${attempt.geo.country}`;
-                if (attempt.geo.latitude && attempt.geo.longitude) {
-                    html += `<br><small>${attempt.geo.latitude.toFixed(4)}, ${attempt.geo.longitude.toFixed(4)}</small>`;
-                }
-                return html;
+        // Fallback to geo (IP from server)
+        if (attempt.geo && attempt.geo.city) {
+            let html = `🌐 ${attempt.geo.city}, ${attempt.geo.country}`;
+            if (attempt.geo.latitude && attempt.geo.longitude) {
+                html += `<br><small>${attempt.geo.latitude.toFixed(4)}, ${attempt.geo.longitude.toFixed(4)}</small>`;
             }
+            return html;
+        }
 
-            return '<span style="color: #999;">Unknown</span>';
+        return '<span style="color: #999;">Unknown</span>';
         }
 
         // Helper function to format detailed address

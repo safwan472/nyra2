@@ -177,20 +177,45 @@ app.get("/admin/photo/:filename", requireAdmin, (req, res) => {
   }
 });
 
-app.delete("/admin/photo/:filename", requireAdmin, (req, res) => {
-  const { filename } = req.params;
-  const filepath = path.join(__dirname, "captures", filename);
-
+// Delete a specific photo
+app.delete("/admin/photo/delete/:filename", requireAdmin, (req, res) => {
   try {
+    const { filename } = req.params;
+    const filepath = path.join(__dirname, "captures", filename);
+
     if (fs.existsSync(filepath)) {
       fs.unlinkSync(filepath);
       res.json({ success: true, message: "Photo deleted successfully" });
     } else {
-      res.status(404).json({ success: false, message: "Photo not found" });
+      res.status(404).json({ success: false, error: "Photo not found" });
     }
   } catch (error) {
     console.error("Error deleting photo:", error);
-    res.status(500).json({ success: false, message: "Failed to delete photo" });
+    res.status(500).json({ success: false, error: "Failed to delete photo" });
+  }
+});
+
+// Delete all photos
+app.delete("/admin/photo/delete-all", requireAdmin, (req, res) => {
+  try {
+    const capturesDir = path.join(__dirname, "captures");
+    let count = 0;
+
+    if (fs.existsSync(capturesDir)) {
+      const files = fs.readdirSync(capturesDir);
+      files.forEach(file => {
+        const filepath = path.join(capturesDir, file);
+        if (fs.statSync(filepath).isFile()) {
+          fs.unlinkSync(filepath);
+          count++;
+        }
+      });
+    }
+
+    res.json({ success: true, count, message: `Deleted ${count} photo(s)` });
+  } catch (error) {
+    console.error("Error deleting all photos:", error);
+    res.status(500).json({ success: false, error: "Failed to delete photos" });
   }
 });
 
